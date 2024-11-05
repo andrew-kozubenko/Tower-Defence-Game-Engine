@@ -1,4 +1,4 @@
-module ru.nsu.t4werok.towerdefence {
+module ru.nsu.t4werok.towerdefence.app {
     requires javafx.controls;
     requires javafx.fxml;
 
@@ -8,6 +8,8 @@ module ru.nsu.t4werok.towerdefence {
     requires org.kordamp.bootstrapfx.core;
     requires com.almasb.fxgl.all;
 
-    opens ru.nsu.t4werok.towerdefence to javafx.fxml;
-    exports ru.nsu.t4werok.towerdefence;
+    exports ru.nsu.t4werok.towerdefence.app;
+    opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
+    exports ru.nsu.t4werok.towerdefence.controller;
+    opens ru.nsu.t4werok.towerdefence.controller to javafx.fxml;
 }
