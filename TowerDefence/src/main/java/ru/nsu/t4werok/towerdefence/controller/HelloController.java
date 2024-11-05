@@ -1,4 +1,4 @@
-package ru.nsu.t4werok.towerdefence;
+package ru.nsu.t4werok.towerdefence.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
