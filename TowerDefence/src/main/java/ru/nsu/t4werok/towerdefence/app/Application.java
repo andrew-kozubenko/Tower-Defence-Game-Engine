@@ -3,6 +3,8 @@ package ru.nsu.t4werok.towerdefence.app;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.model.game.playerState.PlayerState;
+
 import java.io.IOException;
 
 public class Application extends javafx.application.Application {
