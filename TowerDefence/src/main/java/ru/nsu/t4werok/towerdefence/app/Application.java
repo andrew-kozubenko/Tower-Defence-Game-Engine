@@ -1,18 +1,13 @@
 package ru.nsu.t4werok.towerdefence.app;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
-import java.io.IOException;
+import ru.nsu.t4werok.towerdefence.view.menu.MainMenuView;
 
 public class Application extends javafx.application.Application {
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Application.class.getResource("hello-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Tower!");
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage primaryStage) {
+        MainMenuView mainMenuView = new MainMenuView(primaryStage);
+        mainMenuView.show();
     }
 
     public static void main(String[] args) {
