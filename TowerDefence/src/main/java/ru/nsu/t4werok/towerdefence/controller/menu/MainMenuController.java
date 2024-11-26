@@ -13,6 +13,10 @@ public class MainMenuController {
         sceneController.switchTo("MapSelection");
     }
 
+    public void onReplayButtonPressed() {
+        sceneController.switchTo("ReplaySelection");
+    }
+
     public void onSettingsButtonPressed() {
         sceneController.switchTo("Settings");
     }
