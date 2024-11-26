@@ -1,54 +1,56 @@
 package ru.nsu.t4werok.towerdefence.view.menu;
 
-import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.controller.menu.SettingsController;
 
 public class SettingsView {
-    private final Stage stage;
+    private final SettingsController controller;
+    private final Scene scene;
 
-    public SettingsView(Stage stage) {
-        this.stage = stage;
-    }
+    public SettingsView(SettingsController controller) {
+        this.controller = controller;
 
-    public void show() {
-        // Создаем контейнер VBox
-        VBox vbox = new VBox(15); // Расстояние между элементами
-        vbox.setAlignment(Pos.CENTER); // Центрируем элементы
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
 
-        // Кнопка "Resolution"
-        Button resolutionButton = new Button("Resolution");
-        resolutionButton.setOnAction(e -> handleResolutionChange());
+        // Громкость
+        Label volumeLabel = new Label("Volume:");
+        Slider volumeSlider = new Slider(0, 100, 50);
 
-        // Кнопка "Volume"
-        Button volumeButton = new Button("Volume");
-        volumeButton.setOnAction(e -> handleVolumeChange());
+        // Разрешение
+        Label resolutionLabel = new Label("Resolution:");
+        ComboBox<String> resolutionComboBox = new ComboBox<>();
+        resolutionComboBox.getItems().addAll("1280x720", "1920x1080", "2560x1440");
+        resolutionComboBox.setValue("1920x1080");
+
+        // Кнопка Apply
+        Button applyButton = new Button("Apply");
+        applyButton.setOnAction(e -> controller.applySettings());
 
         // Кнопка "Back" для возврата в главное меню
         Button backButton = new Button("Back to Main Menu");
-        backButton.setOnAction(e -> new MainMenuView(stage).show());
+        backButton.setOnAction(e -> controller.onBackButtonPressed());
 
-        // Добавляем кнопки в VBox
-        vbox.getChildren().addAll(resolutionButton, volumeButton, backButton);
+        root.getChildren().addAll(
+                volumeLabel, volumeSlider,
+                resolutionLabel, resolutionComboBox,
+                applyButton, backButton
+        );
 
-        // Создаем сцену и задаем ее для stage
-        Scene scene = new Scene(vbox, 400, 300);
-        stage.setTitle("Settings");
-        stage.setScene(scene);
-        stage.show();
+        // Инициализация контроллера
+        controller.initialize(volumeSlider, resolutionComboBox);
+
+        this.scene = new Scene(root, 400, 300);
     }
 
-    private void handleResolutionChange() {
-        // Заглушка для изменения разрешения
-        System.out.println("Resolution settings will be implemented here.");
-    }
-
-    private void handleVolumeChange() {
-        // Заглушка для изменения громкости
-        System.out.println("Volume settings will be implemented here.");
+    public Scene getScene() {
+        return scene;
     }
 }
-
 
