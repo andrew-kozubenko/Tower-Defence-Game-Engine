@@ -17,13 +17,16 @@ public class MainMenuView {
         Button playButton = new Button("Play");
         playButton.setOnAction(e -> controller.onPlayButtonPressed());
 
+        Button replayButton = new Button("Replays");
+        replayButton.setOnAction(e -> controller.onReplayButtonPressed());
+
         Button settingsButton = new Button("Settings");
         settingsButton.setOnAction(e -> controller.onSettingsButtonPressed());
 
         Button exitButton = new Button("Exit");
         exitButton.setOnAction(e -> controller.onExitButtonPressed());
 
-        layout.getChildren().addAll(playButton, settingsButton, exitButton);
+        layout.getChildren().addAll(playButton, replayButton, settingsButton, exitButton);
         this.scene = new Scene(layout, 400, 300);
     }
 
