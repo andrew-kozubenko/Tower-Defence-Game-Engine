@@ -5,39 +5,29 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.controller.menu.MainMenuController;
 
 public class MainMenuView {
+    private final Scene scene;
 
-    private final Stage primaryStage;
+    public MainMenuView(MainMenuController controller) {
+        VBox layout = new VBox(15);
+        layout.setAlignment(Pos.CENTER);
 
-    public MainMenuView(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+        Button playButton = new Button("Play");
+        playButton.setOnAction(e -> controller.onPlayButtonPressed());
+
+        Button settingsButton = new Button("Settings");
+        settingsButton.setOnAction(e -> controller.onSettingsButtonPressed());
+
+        Button exitButton = new Button("Exit");
+        exitButton.setOnAction(e -> controller.onExitButtonPressed());
+
+        layout.getChildren().addAll(playButton, settingsButton, exitButton);
+        this.scene = new Scene(layout, 400, 300);
     }
 
-    public void show() {
-        // Создаем корневой контейнер
-        VBox root = new VBox(15); // VBox с отступом 15
-        root.setAlignment(Pos.CENTER); // Центровка элементов
-
-        // Создаем кнопки для главного меню
-        Button startButton = new Button("Start Game");
-        Button replayButton = new Button("Replay");
-        Button settingsButton = new Button("Settings");
-        Button exitButton = new Button("Exit");
-
-        // Назначаем обработчики событий
-        startButton.setOnAction(e -> new MapSelectionView(primaryStage).show());
-        replayButton.setOnAction(e -> new ReplaySelectionView(primaryStage).show());
-        settingsButton.setOnAction(e -> new SettingsView(primaryStage).show());
-        exitButton.setOnAction(e -> primaryStage.close());
-
-        // Добавляем кнопки в VBox
-        root.getChildren().addAll(startButton, replayButton, settingsButton, exitButton);
-
-        // Создаем сцену и задаем ее для stage
-        Scene scene = new Scene(root, 400, 300);
-        primaryStage.setTitle("Tower Defence - Main Menu");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    public Scene getScene() {
+        return scene;
     }
 }

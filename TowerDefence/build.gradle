@@ -26,7 +26,7 @@ tasks.withType(JavaCompile) {
 
 application {
     mainModule = 'ru.nsu.t4werok.towerdefence.app'
-    mainClass = 'ru.nsu.t4werok.towerdefence.app.HelloApplication'
+    mainClass = 'ru.nsu.t4werok.towerdefence.app.TowerDefenseApplication'
 }
 
 javafx {
