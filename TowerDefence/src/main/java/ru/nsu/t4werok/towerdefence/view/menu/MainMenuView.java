@@ -17,7 +17,7 @@ public class MainMenuView {
     public void show() {
         // Создаем корневой контейнер
         VBox root = new VBox(15); // VBox с отступом 15
-        root.setAlignment(Pos.CENTER_LEFT); // Центровка элементов
+        root.setAlignment(Pos.CENTER); // Центровка элементов
 
         // Создаем кнопки для главного меню
         Button startButton = new Button("Start Game");
