@@ -7,6 +7,7 @@ module ru.nsu.t4werok.towerdefence.app {
     requires net.synedra.validatorfx;
     requires org.kordamp.bootstrapfx.core;
     requires com.almasb.fxgl.all;
+    requires com.fasterxml.jackson.databind;
 
     exports ru.nsu.t4werok.towerdefence.app;
     opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
