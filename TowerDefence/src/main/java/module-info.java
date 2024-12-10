@@ -9,6 +9,8 @@ module ru.nsu.t4werok.towerdefence.app {
     requires com.almasb.fxgl.all;
     requires com.fasterxml.jackson.databind;
 
+    exports ru.nsu.t4werok.towerdefence.managers.menu to com.fasterxml.jackson.databind;
+
     exports ru.nsu.t4werok.towerdefence.app;
     opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     exports ru.nsu.t4werok.towerdefence.controller;
