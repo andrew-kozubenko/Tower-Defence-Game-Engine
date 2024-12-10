@@ -26,12 +26,17 @@ public class SettingsView {
         // Разрешение
         Label resolutionLabel = new Label("Resolution:");
         ComboBox<String> resolutionComboBox = new ComboBox<>();
-        resolutionComboBox.getItems().addAll("1280x720", "1920x1080", "2560x1440");
-        resolutionComboBox.setValue("1920x1080");
+        resolutionComboBox.getItems().addAll("800x600", "1280x720", "1920x1080", "2560x1440");
+        resolutionComboBox.setValue("800x600");
 
         // Кнопка Apply
         Button applyButton = new Button("Apply");
-        applyButton.setOnAction(e -> controller.applySettings());
+        applyButton.setOnAction(e -> {
+            controller.setVolume((int) volumeSlider.getValue()); // Передаем числовое значение громкости
+            controller.setResolution(resolutionComboBox.getValue()); // Передаем строку разрешения
+            controller.applySettings();
+        });
+
 
         // Кнопка "Back" для возврата в главное меню
         Button backButton = new Button("Back to Main Menu");
