@@ -6,7 +6,7 @@ import java.util.List;
 public class TechNode {
     private final String name; // Название технологии
     private final String description; // Описание технологии
-    private final int cost; // Стоимость изучения технологии
+    private final Integer cost; // Стоимость изучения технологии
     private final List<TechNode> prerequisites; // Необходимые технологии для разблокировки
     private final List<TechNode> children; // Дочерние узлы (связанные технологии)
 
@@ -40,7 +40,7 @@ public class TechNode {
     }
 
     // Получить стоимость технологии
-    public int getCost() {
+    public Integer getCost() {
         return cost;
     }
 

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Map {
-    private final int width; // Ширина карты
-    private final int height; // Высота карты
+    private final Integer width; // Ширина карты
+    private final Integer height; // Высота карты
     private final List<List<Integer[]>> enemyPaths; // Пути врагов: список списков координат
     private final List<Integer[]> towerPositions; // Доступные позиции для башен
     private final Integer[] spawnPoint; // Точка появления врагов
