@@ -9,8 +9,17 @@ public class SettingsController {
     private final SettingsManager settingsManager;
     private final SceneController sceneController;
 
-    private Slider volumeSlider;
-    private ComboBox<String> resolutionComboBox;
+    public SettingsManager getSettingsManager() {
+        return settingsManager;
+    }
+
+    public void setVolume(int volume) {
+        settingsManager.setVolume(volume);
+    }
+
+    public void setResolution(String resolution) {
+        settingsManager.setResolution(resolution);
+    }
 
     public SettingsController(SceneController sceneController) {
         this.settingsManager = SettingsManager.getInstance();
@@ -18,9 +27,6 @@ public class SettingsController {
     }
 
     public void initialize(Slider volumeSlider, ComboBox<String> resolutionComboBox) {
-        this.volumeSlider = volumeSlider;
-        this.resolutionComboBox = resolutionComboBox;
-
         // Установка текущих значений в UI
         volumeSlider.setValue(settingsManager.getVolume());
         resolutionComboBox.setValue(settingsManager.getResolution());
