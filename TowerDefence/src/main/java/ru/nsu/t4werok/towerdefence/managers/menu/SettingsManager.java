@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class SettingsManager {
-    private static final String SETTINGS_FILE = "settings.json";
+    private static final String SETTINGS_FILE = "settings/settings.json";
     private static SettingsManager instance = null;
 
     private int volume = 50; // Громкость по умолчанию (от 0 до 100)
