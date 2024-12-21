@@ -1,7 +1,12 @@
 package ru.nsu.t4werok.towerdefence.controller.menu;
 
 import javafx.stage.FileChooser;
+import ru.nsu.t4werok.towerdefence.app.GameEngine;
+import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapConfig;
+import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapSelectionConfig;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
+import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
+import ru.nsu.t4werok.towerdefence.view.game.GameView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,10 +16,19 @@ import java.util.List;
 
 public class MapSelectionController {
     private final SceneController sceneController;
+    private final MapSelectionConfig mapSelectionConfig;
 
     // Конструктор с передачей сцены
     public MapSelectionController(SceneController sceneController) {
         this.sceneController = sceneController;
+        this.mapSelectionConfig = new MapSelectionConfig();
+    }
+
+    /**
+     * Метод для загрузки всех доступных карт
+     */
+    public List<MapConfig> getAvailableMaps() {
+        return mapSelectionConfig.loadMaps();
     }
 
     // Метод для обработки нажатия кнопки "Back to Main Menu"
@@ -22,37 +36,39 @@ public class MapSelectionController {
         sceneController.switchTo("MainMenu");
     }
 
-    // Метод для обработки выбора карты
-    public void onMapSelected(String mapName) {
-        if (mapName != null) {
-            // Здесь должна быть логика запуска игры с выбранной картой
-            System.out.println("Start game on map: " + mapName);
+    /**
+     * Метод для обработки выбора карты.
+     *
+     * @param mapConfig Конфигурация выбранной карты.
+     */
+    public void onMapSelected(MapConfig mapConfig) {
+        if (mapConfig != null) {
+            // Создание игрового объекта GameMap на основе MapConfig
+            GameMap gameMap = new GameMap(
+                    mapConfig.getWidth(),
+                    mapConfig.getHeight(),
+                    mapConfig.getEnemyPaths(),
+                    mapConfig.getTowerPositions(),
+                    mapConfig.getSpawnPoint(),
+                    mapConfig.getBase()
+            );
+
+            // Создание игрового движка с картой
+            GameEngine gameEngine = new GameEngine(gameMap);
+
+            // Создание представления игры
+            GameView gameView = new GameView(gameEngine);
+
+            // Добавляем игровую сцену в SceneController
+            sceneController.addScene("Game", gameView.getScene());
+
+            // Переключаемся на игровую сцену
+            sceneController.switchTo("Game");
+
+            // Запуск игрового движка
+            gameEngine.start();
         } else {
-            System.out.println("No map selected");
+            System.out.println("No map selected or map configuration is invalid.");
         }
     }
-
-    // Метод для загрузки карт из конфигурационных файлов
-    public List<String> loadMaps() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Choose Map Configuration File");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("JSON Files", "*.json") // Фильтруем только JSON-файлы
-        );
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home") + "/Documents/Games/Tower Defence/Maps"));
-
-        // Показываем диалог выбора файла
-        File selectedFile = fileChooser.showOpenDialog(null);
-
-        List<String> maps = new ArrayList<>();
-//        if (selectedFile != null) {
-//            // Добавляем название выбранного файла в список карт
-//            maps.add(selectedFile.getName());
-//            System.out.println("Map file loaded: " + selectedFile.getAbsolutePath());
-//        } else {
-//            System.out.println("No map file selected.");
-//        }
-        return maps;
-    }
 }
-

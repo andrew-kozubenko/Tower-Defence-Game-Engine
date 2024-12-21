@@ -1,0 +1,12 @@
+{
+  "name": "Philosophic tower",
+  "x": 5,
+  "y": 7,
+  "price": 150,
+  "damage": 25,
+  "damageType": "physical",
+  "fireRate": 1.2,
+  "upgradeLevel": 1,
+  "visualEffect": "flame"
+}
+
