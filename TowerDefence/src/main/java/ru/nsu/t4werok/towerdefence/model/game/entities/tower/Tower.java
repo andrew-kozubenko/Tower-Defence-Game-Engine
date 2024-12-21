@@ -4,6 +4,9 @@ public class Tower {
     // Название башни (для идентификации)
     private String name;
 
+    private int x;
+    private int y;
+
     // Стоимость строительства или улучшения башни
     private int price;
 
@@ -21,6 +24,16 @@ public class Tower {
 
     // Визуальный эффект башни (например, анимация или цвет)
     private String visualEffect;
+
+    /**
+     * Конструктор для создания новой башни с координатами.
+     * @param x
+     * @param y
+     */
+    public Tower(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 
     /**
      * Конструктор для создания новой башни с указанными параметрами.
@@ -105,5 +118,45 @@ public class Tower {
      */
     public void setVisualEffect(String visualEffect) {
         this.visualEffect = visualEffect;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public void setDamageType(String damageType) {
+        this.damageType = damageType;
+    }
+
+    public void setFireRate(double fireRate) {
+        this.fireRate = fireRate;
+    }
+
+    public void setUpgradeLevel(int upgradeLevel) {
+        this.upgradeLevel = upgradeLevel;
     }
 }

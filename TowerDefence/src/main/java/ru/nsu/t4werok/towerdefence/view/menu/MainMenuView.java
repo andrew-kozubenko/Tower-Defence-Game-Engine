@@ -26,7 +26,7 @@ public class MainMenuView {
         Button replayButton = new Button("Replays");
         replayButton.setOnAction(e -> controller.onReplayButtonPressed());
 
-        Button mapButton = new Button("Map");
+        Button mapButton = new Button("GameMap");
         mapButton.setOnAction(e -> controller.onPlayButtonPressed());
 
         Button settingsButton = new Button("Settings");

@@ -12,6 +12,7 @@ public class Enemy {
     private int loot;
     private String model;
     private List<String> animations;
+    private boolean isDead = false;
 
     // Конструктор
     public Enemy(int lifePoints, int speed, int defense, Map<String, Integer> strengths,
@@ -89,6 +90,14 @@ public class Enemy {
 
     public void setAnimations(List<String> animations) {
         this.animations = animations;
+    }
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
     }
 
     // Методы для обработки повреждений

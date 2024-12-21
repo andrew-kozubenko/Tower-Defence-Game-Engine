@@ -3,7 +3,7 @@ package ru.nsu.t4werok.towerdefence.model.game.entities.map;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Map {
+public class GameMap {
     private final Integer width; // Ширина карты
     private final Integer height; // Высота карты
     private final List<List<Integer[]>> enemyPaths; // Пути врагов: список списков координат
@@ -11,21 +11,21 @@ public class Map {
     private final Integer[] spawnPoint; // Точка появления врагов
     private Base base; // База
 
-    public Map(Integer width, Integer height, Integer[] spawnPoint,
-               Integer xBase, Integer yBase, Integer healthBase) {
+    public GameMap(Integer width, Integer height, List<List<Integer[]>> enemyPaths,
+                   List<Integer[]> towerPositions, Integer[] spawnPoint, Base base) {
         this.width = width;
         this.height = height;
-        this.enemyPaths = new ArrayList<>();
-        this.towerPositions = new ArrayList<>();
+        this.enemyPaths = enemyPaths;
+        this.towerPositions = towerPositions;
         this.spawnPoint = spawnPoint;
-        this.base = new Base(xBase, yBase, healthBase);
+        this.base = base;
     }
 
-    public int getWidth() {
+    public Integer getWidth() {
         return width;
     }
 
-    public int getHeight() {
+    public Integer getHeight() {
         return height;
     }
 
@@ -41,18 +41,6 @@ public class Map {
         return spawnPoint;
     }
 
-    public void addEnemyPath(List<Integer[]> path) {
-        enemyPaths.add(path);
-    }
-
-    public void addTowerPosition(Integer[] position) {
-        towerPositions.add(position);
-    }
-
-    public boolean isWithinBounds(int x, int y) {
-        return x >= 0 && x < width && y >= 0 && y < height;
-    }
-
     public Base getBase() {
         return base;
     }
@@ -61,8 +49,8 @@ public class Map {
         this.base = base;
     }
 
-    public static Map loadFromConfig(String filePath) {
-
-        return null;
+    // Проверка, находится ли точка в пределах карты
+    public boolean isWithinBounds(int x, int y) {
+        return x >= 0 && x < width && y >= 0 && y < height;
     }
 }
