@@ -9,10 +9,12 @@ module ru.nsu.t4werok.towerdefence.app {
     requires com.almasb.fxgl.all;
     requires com.fasterxml.jackson.databind;
 
-    exports ru.nsu.t4werok.towerdefence.managers.menu to com.fasterxml.jackson.databind;
-
+    exports ru.nsu.t4werok.towerdefence.managers.menu;
+    exports ru.nsu.t4werok.towerdefence.config.game.entities.map;
     exports ru.nsu.t4werok.towerdefence.app;
-    opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     exports ru.nsu.t4werok.towerdefence.controller;
+
+    opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     opens ru.nsu.t4werok.towerdefence.controller to javafx.fxml;
+    opens ru.nsu.t4werok.towerdefence.model.game.entities.map to com.fasterxml.jackson.databind; // Открываем доступ к классу Base
 }
