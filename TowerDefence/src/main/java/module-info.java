@@ -16,5 +16,8 @@ module ru.nsu.t4werok.towerdefence.app {
 
     opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     opens ru.nsu.t4werok.towerdefence.controller to javafx.fxml;
+    opens ru.nsu.t4werok.towerdefence.model.game.entities.tower to com.fasterxml.jackson.databind;
+
     opens ru.nsu.t4werok.towerdefence.model.game.entities.map to com.fasterxml.jackson.databind; // Открываем доступ к классу Base
 }
+
