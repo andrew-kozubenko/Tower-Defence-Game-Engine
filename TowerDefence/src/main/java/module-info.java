@@ -15,4 +15,5 @@ module ru.nsu.t4werok.towerdefence.app {
     opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     exports ru.nsu.t4werok.towerdefence.controller;
     opens ru.nsu.t4werok.towerdefence.controller to javafx.fxml;
+    opens ru.nsu.t4werok.towerdefence.model.game.entities.tower to com.fasterxml.jackson.databind;
 }

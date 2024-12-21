@@ -78,4 +78,7 @@ public class MapConfig {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writerWithDefaultPrettyPrinter().writeValue(new File(filePath), config);
     }
+
+    public void setMapName(String fileNameWithoutExtension) {
+    }
 }
