@@ -6,11 +6,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.config.menu.SettingsConfig;
 import ru.nsu.t4werok.towerdefence.controller.menu.MainMenuController;
 import ru.nsu.t4werok.towerdefence.managers.menu.SettingsManager;
 
 public class MainMenuView {
-    private final Scene scene;
+    private Scene scene;
     private final SettingsManager settingsManager;
     private final VBox layout; // Сохраняем ссылку на layout для обновлений
 
@@ -18,7 +19,7 @@ public class MainMenuView {
         this.settingsManager = SettingsManager.getInstance(); // Получаем менеджер настроек
         layout = new VBox(15); // Контейнер для кнопок
         layout.setAlignment(Pos.CENTER); // Устанавливаем начальное выравнивание
-        layout.setStyle("-fx-padding: 20;"); // Дополнительное пространство вокруг
+//        layout.setStyle("-fx-padding: 20;"); // Дополнительное пространство вокруг
 
         Label settingsLabel = new Label(); // Метка для отображения текущих настроек
         updateSettingsLabel(settingsLabel); // Устанавливаем начальное значение
@@ -43,14 +44,19 @@ public class MainMenuView {
         layout.getChildren().addAll(settingsLabel, playButton, replayButton, settingsButton, exitButton);
 
         // Создаём сцену
-        this.scene = new Scene(layout, 800, 600); // Указываем стартовые размеры
+        this.scene = new Scene(layout, 400, 300); // Указываем стартовые размеры
 
         layout.prefWidthProperty().bind(this.scene.widthProperty());
         layout.prefHeightProperty().bind(this.scene.heightProperty());
-        // Добавляем слушатели для изменения выравнивания
-        this.scene.widthProperty().addListener((obs, oldWidth, newWidth) -> adjustLayout());
-        this.scene.heightProperty().addListener((obs, oldHeight, newHeight) -> adjustLayout());
+
+        layout.widthProperty().addListener((observable, oldValue, newValue) -> {
+            layout.setAlignment(Pos.CENTER); // Центрируем элементы при изменении ширины
+        });
+        layout.heightProperty().addListener((observable, oldValue, newValue) -> {
+            layout.setAlignment(Pos.CENTER); // Центрируем элементы при изменении высоты
+        });
     }
+
 
     public Scene getScene() {
         return scene;
@@ -65,6 +71,7 @@ public class MainMenuView {
 
     private void adjustLayout() {
         // Центрируем содержимое при изменении размеров окна
+        System.out.println("a[a[a[a[a[a[");
         layout.setAlignment(Pos.CENTER);
     }
 }

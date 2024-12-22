@@ -50,6 +50,9 @@ public class MapSelectionView {
 
         // Создаём сцену с контейнером
         this.scene = new Scene(layout, 400, 300);
+
+        layout.prefWidthProperty().bind(this.scene.widthProperty());
+        layout.prefHeightProperty().bind(this.scene.heightProperty());
     }
 
     public Scene getScene() {
