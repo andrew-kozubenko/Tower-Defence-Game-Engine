@@ -1,6 +1,7 @@
 package ru.nsu.t4werok.towerdefence.controller.game;
 
 import ru.nsu.t4werok.towerdefence.app.GameEngine;
+import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.config.menu.SettingsConfig;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.entities.tower.TowerController;
@@ -15,6 +16,7 @@ public class GameController {
     private final GameMap gameMap;
     private final List<Tower> towers;
     private final SceneController sceneController;
+    private TowerConfig selectedTower;
 
     public GameController(SceneController sceneController, GameMap gameMap, List<Tower> towers) {
         this.gameMap = gameMap;
@@ -31,8 +33,9 @@ public class GameController {
         return towerController.loadTowerFromConfigs(directoryPath);
     }
 
-    public void selectTower(String towerName) {
-
+    public void selectTower(TowerConfig towerConfig) {
+        this.selectedTower = towerConfig;
+        System.out.println("Selected tower " + towerConfig.getName());
     }
 
     public void openSettings() {
