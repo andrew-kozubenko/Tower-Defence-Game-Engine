@@ -46,7 +46,7 @@ public class GameView {
 
         // Создание основного контейнера
         StackPane layout = new StackPane(canvas);
-        HBox rootLayout = new HBox(10, layout, towerListPanel); // Добавление панели с башнями справа
+        HBox rootLayout = new HBox(10, topBar, layout, towerListPanel); // Добавление панели с башнями справа
         rootLayout.setStyle("-fx-padding: 10;");
         this.scene = new Scene(rootLayout, 1024, 768); // Устанавливаем размер окна игры
 
