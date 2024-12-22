@@ -9,7 +9,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ru.nsu.t4werok.towerdefence.app.GameEngine;
+import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
+import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerSelectionConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
+
+import java.util.List;
 
 public class GameView {
     private final Scene scene;
@@ -27,14 +31,15 @@ public class GameView {
         towerListPanel.setPrefWidth(150); // Задаем ширину панели
         towerListPanel.setPrefHeight(600); // Высота должна совпадать с игровым полем
 
-        // Пример доступных башен
-        Button arrowTowerButton = new Button("Arrow Tower");
-        arrowTowerButton.setOnAction(e -> gameController.selectTower("Arrow Tower"));
-        Button cannonTowerButton = new Button("Cannon Tower");
-        cannonTowerButton.setOnAction(e -> gameController.selectTower("Cannon Tower"));
+        TowerSelectionConfig towerConfigLoader = new TowerSelectionConfig();
+        List<TowerConfig> towerConfigs = towerConfigLoader.loadTowers();
 
-        // Добавление кнопок для башен в панель
-        towerListPanel.getChildren().addAll(arrowTowerButton, cannonTowerButton);
+        // Для каждой башни создаем кнопку
+        for (TowerConfig towerConfig : towerConfigs) {
+            Button towerButton = new Button(towerConfig.getName());  // Используем имя из конфигурации
+            towerButton.setOnAction(e -> gameController.selectTower(towerConfig));
+            towerListPanel.getChildren().add(towerButton);
+        }
 
         // Создание кнопки для меню
         Button menuButton = new Button("Menu");

@@ -1,7 +1,5 @@
 {
   "name": "Zimbel's cannon",
-  "x": 5,
-  "y": 7,
   "price": 150,
   "damage": 25,
   "damageType": "physical",

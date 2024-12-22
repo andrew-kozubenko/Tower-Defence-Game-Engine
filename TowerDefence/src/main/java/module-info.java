@@ -14,6 +14,7 @@ module ru.nsu.t4werok.towerdefence.app {
     exports ru.nsu.t4werok.towerdefence.config.menu;
     exports ru.nsu.t4werok.towerdefence.app;
     exports ru.nsu.t4werok.towerdefence.controller;
+    exports ru.nsu.t4werok.towerdefence.config.game.entities.tower;
 
     opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     opens ru.nsu.t4werok.towerdefence.controller to javafx.fxml;
