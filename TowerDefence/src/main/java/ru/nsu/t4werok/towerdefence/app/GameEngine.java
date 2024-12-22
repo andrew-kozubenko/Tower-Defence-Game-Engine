@@ -1,11 +1,13 @@
 package ru.nsu.t4werok.towerdefence.app;
 
 import javafx.animation.AnimationTimer;
+import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.controller.game.entities.tower.TowerController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.view.game.GameView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +24,18 @@ public class GameEngine {
     private int waveNumber = 0; // Номер текущей волны
 
     private final GameController gameController;
+    private final GameView gameView;
+    private final SceneController sceneController;
 
-    public GameEngine(GameMap gameMap) {
+    public GameEngine(GameMap gameMap, SceneController sceneController) {
         this.gameMap = gameMap;
-        this.gameController = new GameController(gameMap, towers);
+        this.sceneController = sceneController;
+        this.gameController = new GameController(sceneController, gameMap, towers);
+        this.gameView = new GameView(gameController);
+        // Добавляем игровую сцену в SceneController
+        sceneController.addScene("Game", gameView.getScene());
+        // Переключаемся на игровую сцену
+        sceneController.switchTo("Game");
     }
 
     public void start() {
@@ -80,7 +90,7 @@ public class GameEngine {
 
     private void render() {
         // Логика отрисовки объектов на карте
-        System.out.println("Rendering game scene...");
+//        System.out.println("Rendering game scene...");
     }
 
     public void startNextWave() {

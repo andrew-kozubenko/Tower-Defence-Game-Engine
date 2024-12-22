@@ -54,16 +54,7 @@ public class MapSelectionController {
             );
 
             // Создание игрового движка с картой
-            GameEngine gameEngine = new GameEngine(gameMap);
-
-            // Создание представления игры
-            GameView gameView = new GameView(gameEngine);
-
-            // Добавляем игровую сцену в SceneController
-            sceneController.addScene("Game", gameView.getScene());
-
-            // Переключаемся на игровую сцену
-            sceneController.switchTo("Game");
+            GameEngine gameEngine = new GameEngine(gameMap, sceneController);
 
             // Запуск игрового движка
             gameEngine.start();
