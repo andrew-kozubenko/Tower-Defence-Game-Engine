@@ -1,7 +1,6 @@
 package ru.nsu.t4werok.towerdefence.config.game.entities.tower;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapConfig;
 
 import java.io.File;
 import java.io.IOException;
