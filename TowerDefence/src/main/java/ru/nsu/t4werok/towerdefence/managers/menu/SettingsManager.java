@@ -1,21 +1,26 @@
 package ru.nsu.t4werok.towerdefence.managers.menu;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.config.menu.SettingsConfig;
+import ru.nsu.t4werok.towerdefence.config.menu.SettingsSlectionConfig;
 
 import java.io.File;
 import java.io.IOException;
 
 public class SettingsManager {
-    private static final String SETTINGS_FILE = "settings/settings.json";
     private static SettingsManager instance = null;
-
-    private int volume = 50; // Громкость по умолчанию (от 0 до 100)
-    private String resolution = "800x600"; // Разрешение по умолчанию
+    private SettingsConfig settingsConfig;
+    private final SettingsSlectionConfig settingsSlectionConfig;
 
     private Stage mainStage; // Ссылка на главное окно приложения
 
-    private SettingsManager() {}
+    public SettingsManager() {
+        this.settingsConfig = new SettingsConfig();
+        this.settingsSlectionConfig = new SettingsSlectionConfig();
+        loadSettings();
+    }
 
     public static SettingsManager getInstance() {
         if (instance == null) {
@@ -25,64 +30,46 @@ public class SettingsManager {
     }
 
     public int getVolume() {
-        return volume;
+        return settingsConfig.getVolume();
     }
 
     public void setVolume(int volume) {
-        this.volume = volume;
+        settingsConfig.setVolume(volume);
     }
 
     public String getResolution() {
-        return resolution;
+        return settingsConfig.getResolution();
     }
 
     public void setResolution(String resolution) {
-        this.resolution = resolution;
+        settingsConfig.setResolution(resolution);
     }
 
     public void setMainStage(Stage stage) {
         this.mainStage = stage;
-        applyResolution(); // Устанавливаем начальное разрешение при запуске
+        applySettings(); // Устанавливаем начальное разрешение при запуске
     }
 
     private void applyResolution() {
+        String resolution = settingsConfig.getResolution();
         if (mainStage != null && resolution.matches("\\d+x\\d+")) {
             String[] dimensions = resolution.split("x");
             double width = Double.parseDouble(dimensions[0]);
             double height = Double.parseDouble(dimensions[1]);
             mainStage.setWidth(width);
             mainStage.setHeight(height);
+
+            // Центрируем окно
+            mainStage.centerOnScreen();
         }
     }
 
     private void loadSettings() {
-        ObjectMapper mapper = new ObjectMapper();
-        File file = new File(SETTINGS_FILE);
-
-        if (file.exists()) {
-            try {
-                SettingsManager loadedSettings = mapper.readValue(file, SettingsManager.class);
-                this.volume = loadedSettings.volume;
-                this.resolution = loadedSettings.resolution;
-            } catch (IOException e) {
-                System.err.println("Error loading settings: " + e.getMessage());
-                // If loading fails, use defaults
-            }
-        } else {
-            System.out.println("Settings file not found. Using default settings.");
-        }
+        this.settingsConfig = settingsSlectionConfig.loadSettings();
     }
 
     public void applySettings() {
-        ObjectMapper mapper = new ObjectMapper();
-        File file = new File(SETTINGS_FILE);
-
-        try {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(file, this);
-        } catch (IOException e) {
-            System.err.println("Error saving settings: " + e.getMessage());
-        }
-
+        settingsSlectionConfig.applySettings();
         applyResolution();
     }
 }
