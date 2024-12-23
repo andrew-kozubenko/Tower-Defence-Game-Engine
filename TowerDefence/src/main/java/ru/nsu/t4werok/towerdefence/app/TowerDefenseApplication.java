@@ -7,6 +7,7 @@ import ru.nsu.t4werok.towerdefence.controller.menu.MainMenuController;
 import ru.nsu.t4werok.towerdefence.controller.menu.MapSelectionController;
 import ru.nsu.t4werok.towerdefence.controller.menu.ReplaySelectionController;
 import ru.nsu.t4werok.towerdefence.controller.menu.SettingsController;
+import ru.nsu.t4werok.towerdefence.view.game.GameView;
 import ru.nsu.t4werok.towerdefence.view.menu.MapSelectionView;
 import ru.nsu.t4werok.towerdefence.managers.menu.SettingsManager;
 import ru.nsu.t4werok.towerdefence.view.menu.ReplaySelectionView;

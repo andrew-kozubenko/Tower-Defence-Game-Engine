@@ -21,16 +21,6 @@ public class TowerConfig {
     // Визуальный эффект башни (например, анимация или цвет)
     private String visualEffect;
 
-    public TowerConfig(String name, int price, int damage, String damageType, double fireRate, int upgradeLevel, String visualEffect) {
-        this.name = name;
-        this.price = price;
-        this.damage = damage;
-        this.damageType = damageType;
-        this.fireRate = fireRate;
-        this.upgradeLevel = upgradeLevel;
-        this.visualEffect = visualEffect;
-    }
-
     public String getName() {
         return name;
     }

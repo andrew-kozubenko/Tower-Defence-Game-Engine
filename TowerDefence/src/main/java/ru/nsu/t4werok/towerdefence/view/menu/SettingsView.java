@@ -32,15 +32,15 @@ public class SettingsView {
         // Кнопка Apply
         Button applyButton = new Button("Apply");
         applyButton.setOnAction(e -> {
-            controller.setVolume((int) volumeSlider.getValue()); // Передаем числовое значение громкости
-            controller.setResolution(resolutionComboBox.getValue()); // Передаем строку разрешения
-            controller.applySettings();
+            this.controller.setVolume((int) volumeSlider.getValue()); // Передаем числовое значение громкости
+            this.controller.setResolution(resolutionComboBox.getValue()); // Передаем строку разрешения
+            this.controller.applySettings();
         });
 
 
         // Кнопка "Back" для возврата в главное меню
         Button backButton = new Button("Back to Main Menu");
-        backButton.setOnAction(e -> controller.onBackButtonPressed());
+        backButton.setOnAction(e -> this.controller.onBackButtonPressed());
 
         root.getChildren().addAll(
                 volumeLabel, volumeSlider,
@@ -52,6 +52,10 @@ public class SettingsView {
         controller.initialize(volumeSlider, resolutionComboBox);
 
         this.scene = new Scene(root, 400, 300);
+
+        root.prefWidthProperty().bind(this.scene.widthProperty());
+        root.prefHeightProperty().bind(this.scene.heightProperty());
+
     }
 
     public Scene getScene() {

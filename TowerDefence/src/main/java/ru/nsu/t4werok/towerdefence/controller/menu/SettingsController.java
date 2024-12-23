@@ -9,10 +9,6 @@ public class SettingsController {
     private final SettingsManager settingsManager;
     private final SceneController sceneController;
 
-    public SettingsManager getSettingsManager() {
-        return settingsManager;
-    }
-
     public void setVolume(int volume) {
         settingsManager.setVolume(volume);
     }
