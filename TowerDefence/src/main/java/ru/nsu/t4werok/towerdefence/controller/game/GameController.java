@@ -15,6 +15,7 @@ public class GameController {
     private final GameMap gameMap;
     private final List<Tower> towers;
     private final SceneController sceneController;
+
     private TowerConfig selectedTower;
     private final GameEngine gameEngine;
 
@@ -30,9 +31,11 @@ public class GameController {
         this.sceneController = sceneController;
     }
 
-//    public void placeTower(TowerConfig towerConfig) {
-//        towerController.addTower(towerConfig);
-//    }
+    public Tower placeTower(int x, int y) {
+        Tower tower = towerController.addTower(selectedTower, x, y);
+        selectedTower = null;
+        return tower;
+    }
 
     public void selectTower(TowerConfig towerConfig) {
         this.selectedTower = towerConfig;
@@ -56,5 +59,9 @@ public class GameController {
 
     public void stop() {
 
+    }
+
+    public TowerConfig getSelectedTower() {
+        return selectedTower;
     }
 }

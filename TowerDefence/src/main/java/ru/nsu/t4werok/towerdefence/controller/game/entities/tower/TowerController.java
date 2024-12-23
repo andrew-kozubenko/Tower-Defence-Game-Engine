@@ -4,6 +4,7 @@ import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.view.game.entities.tower.TowerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +21,12 @@ public class TowerController {
     private final List<TowerConfig> towerConfigs = new ArrayList<>();
 
 
-    public boolean addTower(TowerConfig towerConfig, int x, int y) {
+    public Tower addTower(TowerConfig towerConfig, int x, int y) {
 
         // Проверяем, находится ли позиция внутри границ карты
         if (!gameMap.isWithinBounds(x, y)) {
             System.out.println("Position out of bounds: (" + x + ", " + y + ")");
-            return false;
+            return null;
         }
 
         // Проверяем, доступна ли позиция для установки башни
@@ -34,7 +35,7 @@ public class TowerController {
 
         if (!positionAvailable) {
             System.out.println("Tower cannot be placed at position: (" + x + ", " + y + ")");
-            return false;
+            return null;
         }
 
         // Проверяем, нет ли уже башни в этой позиции
@@ -43,7 +44,7 @@ public class TowerController {
 
         if (towerExists) {
             System.out.println("Tower already exists at position: (" + x + ", " + y + ")");
-            return false;
+            return null;
         }
 
         // Добавляем башню
@@ -55,11 +56,12 @@ public class TowerController {
                 towerConfig.getFireRate(),
                 towerConfig.getVisualEffect(),
                 x, y,
-                towerConfig.getAttackRadius()
+                towerConfig.getAttackRadius(),
+                towerConfig.getImage()
         );
         towers.add(newTower);
         System.out.println("Tower added at position: (" + x + ", " + y + ")");
-        return true;
+        return newTower;
     }
 
     // удаление башни

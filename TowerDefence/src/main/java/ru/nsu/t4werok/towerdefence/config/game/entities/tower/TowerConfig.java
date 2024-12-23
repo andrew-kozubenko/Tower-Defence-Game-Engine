@@ -18,6 +18,24 @@ public class TowerConfig {
     // Текущий уровень улучшения башни
 //    private int upgradeLevel;
 
+
+    // Радиус атаки башни
+    private double attackRadius;
+
+    // Визуальный эффект башни (например, анимация или цвет)
+    private String visualEffect;
+
+    // Картинка башни
+    private String image;
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     public double getAttackRadius() {
         return attackRadius;
     }
@@ -26,11 +44,6 @@ public class TowerConfig {
         this.attackRadius = attackRadius;
     }
 
-    // Радиус атаки башни
-    private double attackRadius;
-
-    // Визуальный эффект башни (например, анимация или цвет)
-    private String visualEffect;
 
     public String getName() {
         return name;

@@ -5,6 +5,7 @@
   "damageType": "physical",
   "fireRate": 1.2,
   "visualEffect": "flame",
-  "attackRadius": 6
+  "attackRadius": 6,
+  "image": "image/towers/jigurda.png"
 }
 

@@ -12,7 +12,9 @@ import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerSelectionConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
+import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.view.game.entities.map.MapView;
+import ru.nsu.t4werok.towerdefence.view.game.entities.tower.TowerView;
 
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class GameView {
     private final VBox towerListPanel; // Панель для отображения доступных башен
     private final GameMap gameMap; // Ссылка на карту для отображения
     private final MapView mapView;
+    private final TowerView towerView;
     private Stage menuStage;
 
     public GameView(GameController gameController) {
@@ -29,8 +32,9 @@ public class GameView {
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
         gameMap = gameController.getGameMap();
+        mapView = new MapView(gc, canvas, gameMap);
 
-        mapView = new MapView(canvas, gameMap);
+        towerView = new TowerView(gc, canvas);
 
         // Панель для башен справа
         towerListPanel = new VBox(10);
@@ -71,7 +75,22 @@ public class GameView {
         });
 
         // Рисуем карту
-        mapView.renderMap(gc);
+        mapView.renderMap();
+
+        // Обработчик клика по канвасу (для добавления башни)
+        canvas.setOnMouseClicked(e -> {
+            if (gameController.getSelectedTower() != null) {
+                // Получаем координаты клика
+                int x = (int) e.getX();
+                int y = (int) e.getY();
+
+                // Передаем координаты в контроллер
+                Tower tower = gameController.placeTower(x, y);
+                if (tower != null) {
+                    towerView.renderTower(tower);
+                }
+            }
+        });
     }
 
     private void showMenu(GameController gameController) {
