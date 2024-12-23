@@ -8,6 +8,7 @@ import ru.nsu.t4werok.towerdefence.controller.game.entities.tower.TowerControlle
 import ru.nsu.t4werok.towerdefence.controller.menu.SettingsController;
 import ru.nsu.t4werok.towerdefence.managers.menu.SettingsManager;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
+import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.view.game.GameView;
@@ -33,9 +34,12 @@ public class GameEngine {
         this.running = running;
     }
 
-    public GameEngine(GameMap gameMap, SceneController sceneController) {
+    private Base base; // База
+
+    public GameEngine(GameMap gameMap, SceneController sceneController, Base base) {
         this.gameMap = gameMap;
         this.sceneController = sceneController;
+        this.base = base; // Передаем базу
         this.gameController = new GameController(this, sceneController, gameMap, towers);
         this.gameView = new GameView(gameController);
         // Добавляем игровую сцену в SceneController
@@ -74,22 +78,24 @@ public class GameEngine {
 
         // Обновление врагов
         for (Enemy enemy : enemies) {
-//            enemy.move(); // Двигаем врагов
-//            if (enemy.reachedBase(map.getBase())) {
-//                map.getBase().damage(enemy.getDamage());
-//            }
+            enemy.move(gameMap.getEnemyPaths().get(0)); // Двигаем врагов по пути
+            if (enemy.isDead()) {
+                if (base != null) {
+                    base.takeDamage(enemy.getDamageToBase()); // Наносим урон базе, если враг достиг её
+                }
+            }
         }
 
         // Обновление башен
         for (Tower tower : towers) {
-//            tower.attack(enemies);
+            // Логика атаки башни на врагов
         }
 
         // Удаление мертвых врагов
         enemies.removeIf(Enemy::isDead);
 
         // Проверка поражения
-        if (gameMap.getBase().getHealth() <= 0) {
+        if (base.getHealth() <= 0) {
             stop();
             System.out.println("Game Over!");
         }
@@ -97,15 +103,18 @@ public class GameEngine {
 
     private void render() {
         // Логика отрисовки объектов на карте
-//        System.out.println("Rendering game scene...");
+        // System.out.println("Rendering game scene...");
     }
 
     public void startNextWave() {
         waveNumber++;
         System.out.println("Starting wave " + waveNumber);
+
         // Генерация врагов для новой волны
         for (int i = 0; i < waveNumber * 5; i++) {
-//            enemies.add(new Enemy(100 + waveNumber * 10, 1.0));
+            // Здесь создаём врага
+            Enemy enemy = new Enemy(100 + waveNumber * 10, 1, 5, 10, 50, new ArrayList<>(), 0, 3);
+            enemies.add(enemy);
         }
     }
 

@@ -49,9 +49,11 @@ public class GameController {
         this.playerState = new PlayerState("Zimbel", 80);
     }
 
-//    public void placeTower(TowerConfig towerConfig) {
-//        towerController.addTower(towerConfig);
-//    }
+    public Tower placeTower(int x, int y) {
+        Tower tower = towerController.addTower(selectedTower, x, y);
+        selectedTower = null;
+        return tower;
+    }
 
     public void selectTower(TowerConfig towerConfig) {
         this.selectedTower = towerConfig;
@@ -171,4 +173,7 @@ public class GameController {
         return true;
     }
 
+    public TowerConfig getSelectedTower() {
+        return selectedTower;
+    }
 }

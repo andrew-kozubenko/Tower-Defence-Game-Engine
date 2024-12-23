@@ -1,5 +1,9 @@
 package ru.nsu.t4werok.towerdefence.model.game.entities.tower;
 
+import javafx.scene.image.Image;
+
+import java.io.File;
+
 public class Tower {
     // Название башни (для идентификации)
     private String name;
@@ -31,6 +35,9 @@ public class Tower {
     // Визуальный эффект башни (например, анимация или цвет)
     private String visualEffect;
 
+    // Картинка башни
+    private Image imageTower;
+
 
     /**
      * Конструктор для создания новой башни с указанными параметрами.
@@ -44,7 +51,8 @@ public class Tower {
      * @param y Координата Y.
      * @param attackRadius Радиус атаки.
      */
-    public Tower(String name, int price, int damage, String damageType, long fireRate, String visualEffect, int x, int y, double attackRadius) {
+    public Tower(String name, int price, int damage, String damageType, long fireRate, String visualEffect, int x,
+                 int y, double attackRadius, String imageTowerPath) {
         this.name = name;
         this.price = price;
         this.damage = damage;
@@ -56,6 +64,19 @@ public class Tower {
         this.y = y;
         this.attackRadius = attackRadius;
         this.lastAttackTime = 0;
+        try {
+            // Преобразуем путь в URL
+            File file = new File(imageTowerPath);
+            if (file.exists()) {
+                this.imageTower = new Image(file.toURI().toString());
+            } else {
+                System.err.println("Background image file not found: " + imageTowerPath);
+                this.imageTower = null; // Если файл отсутствует, устанавливаем null
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading background image: " + e.getMessage());
+            this.imageTower = null;
+        }
     }
 
     // Геттеры и сеттеры для доступа к полям
@@ -179,4 +200,13 @@ public class Tower {
     public void setLastAttackTime(long lastAttackTime) {
         this.lastAttackTime = lastAttackTime;
     }
+
+    public Image getImageTower() {
+        return imageTower;
+    }
+
+    public void setImageTower(Image imageTower) {
+        this.imageTower = imageTower;
+    }
+
 }

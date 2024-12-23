@@ -11,13 +11,15 @@ import java.util.List;
 public class MapView {
     private final GameMap gameMap;
     private final Canvas canvas;
+    private final GraphicsContext gc;
 
-    public MapView(Canvas canvas, GameMap gameMap) {
+    public MapView(GraphicsContext gc, Canvas canvas, GameMap gameMap) {
+        this.gc = gc;
         this.canvas = canvas;
         this.gameMap = gameMap;
     }
 
-    public void renderMap(GraphicsContext gc) {
+    public void renderMap() {
         // Отображение фона карты
         Image backgroundImage = gameMap.getBackgroundImage();
         if (backgroundImage != null) {
