@@ -1,6 +1,7 @@
 package ru.nsu.t4werok.towerdefence.app;
 
 import javafx.animation.AnimationTimer;
+import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.controller.game.entities.tower.TowerController;
@@ -21,7 +22,6 @@ public class GameEngine {
     private final List<Enemy> enemies = new ArrayList<>(); // Список врагов
     private final List<Tower> towers = new ArrayList<>(); // Список башен на карте
     private List<Tower> towersForSelect; // Список башен на выбор
-    private Tower selectedTower;
 
     private int waveNumber = 0; // Номер текущей волны
 
@@ -49,7 +49,6 @@ public class GameEngine {
         running = true;
         settingsManager.setRunningGame(true);
 
-        this.towersForSelect = gameController.loadTowerFromConfigs("towers");
 
         // Игровой цикл
         gameLoop = new AnimationTimer() {
@@ -111,7 +110,4 @@ public class GameEngine {
         }
     }
 
-    public void addTower() {
-        gameController.placeTower(selectedTower);
-    }
 }
