@@ -30,10 +30,22 @@ public class MapView {
             gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         }
 
+        // Отрисовка сетки
+        int cellWidth = (int) (canvas.getWidth() / gameMap.getWidth());
+        int cellHeight = (int) (canvas.getHeight() / gameMap.getHeight());
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(0.5); // Тонкие линии для сетки
+        for (int x = 0; x <= gameMap.getWidth(); x++) {
+            gc.strokeLine(x * cellWidth, 0, x * cellWidth, canvas.getHeight());
+        }
+        for (int y = 0; y <= gameMap.getHeight(); y++) {
+            gc.strokeLine(0, y * cellHeight, canvas.getWidth(), y * cellHeight);
+        }
+
         // Отрисовка доступных позиций для башен
         gc.setFill(Color.GREEN);
         for (Integer[] position : gameMap.getTowerPositions()) {
-            gc.fillRect(position[0] * 50, position[1] * 50, 50, 50);
+            gc.fillRect(position[0] * cellWidth, position[1] * cellHeight, cellWidth, cellHeight);
         }
 
         // Отрисовка пути врагов
@@ -44,8 +56,8 @@ public class MapView {
                 Integer[] start = path.get(i);
                 Integer[] end = path.get(i + 1);
                 gc.strokeLine(
-                        start[0] * 50 + 25, start[1] * 50 + 25,
-                        end[0] * 50 + 25, end[1] * 50 + 25
+                        start[0] * cellWidth + cellWidth / 2, start[1] * cellHeight + cellHeight / 2,
+                        end[0] * cellWidth + cellWidth / 2, end[1] * cellHeight + cellHeight / 2
                 );
             }
         }
@@ -54,6 +66,6 @@ public class MapView {
         gc.setFill(Color.BLUE);
         int baseX = gameMap.getBase().getX();
         int baseY = gameMap.getBase().getY();
-        gc.fillRect(baseX * 50, baseY * 50, 50, 50); // Рисуем базу
+        gc.fillRect(baseX * cellWidth, baseY * cellHeight, cellWidth, cellHeight); // Рисуем базу
     }
 }
