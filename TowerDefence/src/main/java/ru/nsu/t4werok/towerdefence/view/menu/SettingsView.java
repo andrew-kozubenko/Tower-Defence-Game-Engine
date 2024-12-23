@@ -39,7 +39,7 @@ public class SettingsView {
 
 
         // Кнопка "Back" для возврата в главное меню
-        Button backButton = new Button("Back to Main Menu");
+        Button backButton = new Button("Back");
         backButton.setOnAction(e -> this.controller.onBackButtonPressed());
 
         root.getChildren().addAll(
