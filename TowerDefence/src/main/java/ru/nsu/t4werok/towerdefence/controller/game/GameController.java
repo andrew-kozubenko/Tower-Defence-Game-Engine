@@ -25,13 +25,9 @@ public class GameController {
         this.sceneController = sceneController;
     }
 
-    public void placeTower(Tower tower) {
-        towerController.addTower(tower);
-    }
-
-    public List<Tower> loadTowerFromConfigs(String directoryPath) {
-        return towerController.loadTowerFromConfigs(directoryPath);
-    }
+//    public void placeTower(TowerConfig towerConfig) {
+//        towerController.addTower(towerConfig);
+//    }
 
     public void selectTower(TowerConfig towerConfig) {
         this.selectedTower = towerConfig;
