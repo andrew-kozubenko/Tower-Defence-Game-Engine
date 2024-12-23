@@ -18,6 +18,10 @@ public class GameController {
     private final SceneController sceneController;
     private TowerConfig selectedTower;
 
+    public GameMap getGameMap() {
+        return gameMap;
+    }
+
     public GameController(SceneController sceneController, GameMap gameMap, List<Tower> towers) {
         this.gameMap = gameMap;
         this.towers = towers;

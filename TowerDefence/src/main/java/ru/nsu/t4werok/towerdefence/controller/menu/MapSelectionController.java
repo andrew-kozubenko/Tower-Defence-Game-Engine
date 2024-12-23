@@ -50,7 +50,8 @@ public class MapSelectionController {
                     mapConfig.getEnemyPaths(),
                     mapConfig.getTowerPositions(),
                     mapConfig.getSpawnPoint(),
-                    mapConfig.getBase()
+                    mapConfig.getBase(),
+                    mapConfig.getBackgroundImage()
             );
 
             // Создание игрового движка с картой

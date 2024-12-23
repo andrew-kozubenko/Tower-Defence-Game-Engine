@@ -15,6 +15,7 @@ public class MapConfig {
     private List<Integer[]> towerPositions; // Доступные позиции для башен
     private Integer[] spawnPoint; // Точка появления врагов
     private Base base; // База
+    private String backgroundImage;
 
     public String getMapName() {
         return mapName;
@@ -70,5 +71,13 @@ public class MapConfig {
 
     public void setBase(Base base) {
         this.base = base;
+    }
+
+    public String getBackgroundImage() {
+        return backgroundImage;
+    }
+
+    public void setBackgroundImage(String backgroundImage) {
+        this.backgroundImage = backgroundImage;
     }
 }
