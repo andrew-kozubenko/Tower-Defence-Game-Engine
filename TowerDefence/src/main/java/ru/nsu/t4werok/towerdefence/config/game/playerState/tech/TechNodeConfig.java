@@ -8,8 +8,8 @@ public class TechNodeConfig {
     private String name; // Название технологии
     private String description; // Описание технологии
     private Integer cost; // Стоимость изучения технологии
-    private List<TechNode> prerequisites; // Необходимые технологии для разблокировки
-    private List<TechNode> children; // Дочерние узлы (связанные технологии)
+    private List<TechNodeConfig> prerequisites; // Необходимые технологии для разблокировки
+    private List<TechNodeConfig> children; // Дочерние узлы (связанные технологии)
 
     public String getName() {
         return name;
@@ -35,19 +35,19 @@ public class TechNodeConfig {
         this.cost = cost;
     }
 
-    public List<TechNode> getPrerequisites() {
+    public List<TechNodeConfig> getPrerequisites() {
         return prerequisites;
     }
 
-    public void setPrerequisites(List<TechNode> prerequisites) {
+    public void setPrerequisites(List<TechNodeConfig> prerequisites) {
         this.prerequisites = prerequisites;
     }
 
-    public List<TechNode> getChildren() {
+    public List<TechNodeConfig> getChildren() {
         return children;
     }
 
-    public void setChildren(List<TechNode> children) {
+    public void setChildren(List<TechNodeConfig> children) {
         this.children = children;
     }
 }

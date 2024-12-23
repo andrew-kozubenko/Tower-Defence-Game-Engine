@@ -15,11 +15,12 @@ module ru.nsu.t4werok.towerdefence.app {
     exports ru.nsu.t4werok.towerdefence.app;
     exports ru.nsu.t4werok.towerdefence.controller;
     exports ru.nsu.t4werok.towerdefence.config.game.entities.tower;
+    exports ru.nsu.t4werok.towerdefence.config.game.playerState.tech;
 
     opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     opens ru.nsu.t4werok.towerdefence.controller to javafx.fxml;
     opens ru.nsu.t4werok.towerdefence.model.game.entities.tower to com.fasterxml.jackson.databind;
-
-    opens ru.nsu.t4werok.towerdefence.model.game.entities.map to com.fasterxml.jackson.databind; // Открываем доступ к классу Base
+    opens ru.nsu.t4werok.towerdefence.model.game.entities.map to com.fasterxml.jackson.databind;
+    opens ru.nsu.t4werok.towerdefence.model.game.playerState.tech to com.fasterxml.jackson.databind;
 }
 

@@ -22,7 +22,6 @@ public class GameEngine {
     private AnimationTimer gameLoop; // Игровой цикл
     private final List<Enemy> enemies = new ArrayList<>(); // Список врагов
     private final List<Tower> towers = new ArrayList<>(); // Список башен на карте
-    private List<Tower> towersForSelect; // Список башен на выбор
 
     private int waveNumber = 0; // Номер текущей волны
 
