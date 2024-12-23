@@ -56,6 +56,7 @@ public class GameEngine {
             @Override
             public void handle(long now) {
                 if (!running) {
+                    settingsManager.setRunningGame(false);
                     stop();
                     return;
                 }
