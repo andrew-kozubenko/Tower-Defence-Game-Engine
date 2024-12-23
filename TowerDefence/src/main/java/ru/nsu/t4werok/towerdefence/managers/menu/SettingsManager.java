@@ -1,16 +1,10 @@
 package ru.nsu.t4werok.towerdefence.managers.menu;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.geometry.Pos;
-import javafx.scene.layout.VBox;
+
 import javafx.stage.Stage;
 import ru.nsu.t4werok.towerdefence.config.menu.SettingsConfig;
 import ru.nsu.t4werok.towerdefence.config.menu.SettingsSlectionConfig;
-import javafx.scene.Scene;
 
-import java.io.File;
-import java.io.IOException;
 
 public class SettingsManager {
     private static SettingsManager instance = null;

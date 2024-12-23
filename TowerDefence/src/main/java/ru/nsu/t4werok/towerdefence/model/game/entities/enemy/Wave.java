@@ -6,20 +6,22 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Wave {
-    private final List<Enemy> enemies; // Список врагов в волне
-    private final int interval; // Интервал появления врагов (в миллисекундах)
+    private final List<Enemy> enemies; // Список врагов
+    private final int interval; // Интервал появления врагов
     private boolean isRunning; // Флаг активности волны
-    private int currentEnemyIndex; // Текущий индекс врага в списке
+    private int currentEnemyIndex; // Текущий индекс врага
+    private final List<Integer[]> path; // Путь для врагов
 
     // Конструктор
-    public Wave(List<Enemy> enemies, int interval) {
-        this.enemies = new ArrayList<>(enemies); // Копируем список врагов
+    public Wave(List<Enemy> enemies, int interval, List<Integer[]> path) {
+        this.enemies = new ArrayList<>(enemies);
         this.interval = interval;
         this.isRunning = false;
         this.currentEnemyIndex = 0;
+        this.path = path;
     }
 
-    // Метод запуска волны
+    // Старт волны
     public void startWave() {
         if (isRunning) {
             System.out.println("Wave is already running!");
@@ -30,7 +32,7 @@ public class Wave {
         scheduleNextEnemy();
     }
 
-    // Метод для остановки волны
+    // Остановка волны
     public void stopWave() {
         isRunning = false;
         System.out.println("Wave stopped.");
@@ -41,7 +43,7 @@ public class Wave {
         return currentEnemyIndex >= enemies.size();
     }
 
-    // Планирование появления следующего врага
+    // Запланировать появление следующего врага
     private void scheduleNextEnemy() {
         if (isCompleted()) {
             System.out.println("Wave completed!");
@@ -49,13 +51,11 @@ public class Wave {
             return;
         }
 
-        // Эмулируем появление врага
         Enemy enemy = enemies.get(currentEnemyIndex);
         spawnEnemy(enemy);
         currentEnemyIndex++;
 
         if (isRunning) {
-            // Запускаем следующий враг через заданный интервал
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -65,21 +65,13 @@ public class Wave {
         }
     }
 
-    // Метод для появления врага на карте
+    // Появление врага
     private void spawnEnemy(Enemy enemy) {
-        System.out.println("Spawned enemy: " + enemy.getModel());
-        // Здесь можно добавить логику для добавления врага на карту
+        System.out.println("Spawned enemy");
+        enemy.move(path); // Перемещаем врага по пути
     }
 
-    // Получение текущего состояния волны
-    public String getWaveStatus() {
-        if (isRunning) {
-            return "Wave in progress: " + currentEnemyIndex + "/" + enemies.size() + " enemies spawned.";
-        } else if (isCompleted()) {
-            return "Wave completed!";
-        } else {
-            return "Wave not started.";
-        }
+    public List<Enemy> getEnemies() {
+        return enemies;
     }
 }
-
