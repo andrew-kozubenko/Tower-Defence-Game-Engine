@@ -2,18 +2,46 @@ package ru.nsu.t4werok.towerdefence.view.game.entities.tower;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
+import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.view.game.playerState.tech.TechTreeView;
 
 public class TowerView {
 
     private final Canvas canvas;
     private final GraphicsContext gc;
+    private final GameController gameController;
+    private final TechTreeView techTreeView = new TechTreeView();
 
-    public TowerView(GraphicsContext gc, Canvas canvas) {
+    public TowerView(GameController gameController, GraphicsContext gc, Canvas canvas) {
         this.gc = gc;
         this.canvas = canvas;
+        this.gameController = gameController;
+    }
+
+    public void viewTowersForSelect(VBox towerListPanel) {
+        for (TowerConfig towerConfig : gameController.getTowersForSelect()) {
+            VBox towerBox = new VBox(5); // Контейнер для кнопок башни и её апгрейдов
+
+            // Кнопка для выбора башни
+            Button towerButton = new Button(towerConfig.getName());
+            towerButton.setOnAction(e -> gameController.selectTower(towerConfig));
+
+            // Кнопка для открытия окна улучшений
+            Button upgradesButton = new Button("Upgrades");
+            upgradesButton.setOnAction(e -> techTreeView.showUpgradesWindow(gameController, towerConfig));
+
+            // Добавляем кнопки в контейнер
+            towerBox.getChildren().addAll(towerButton, upgradesButton);
+
+            // Добавляем контейнер в панель
+            towerListPanel.getChildren().add(towerBox);
+        }
     }
 
     public void renderTower(Tower tower) {
@@ -40,6 +68,5 @@ public class TowerView {
             // Рисуем изображение башни, сжимаем его по осям X и Y
             gc.drawImage(towerImage, pixelX, pixelY, originalWidth * scaleX, originalHeight * scaleY);
         }
-
     }
 }

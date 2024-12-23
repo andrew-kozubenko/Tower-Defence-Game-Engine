@@ -33,7 +33,7 @@ public class GameView {
         gameMap = gameController.getGameMap();
         mapView = new MapView(gc, canvas, gameMap);
 
-        towerView = new TowerView(gc, canvas);
+        towerView = new TowerView(gameController, gc, canvas);
 
         // Панель для башен справа
         towerListPanel = new VBox(10);
@@ -41,26 +41,9 @@ public class GameView {
         towerListPanel.setPrefWidth(150);
         towerListPanel.setPrefHeight(600);
 
+        // Башни на выбор и прокачки
         gameController.loadTowersForSelect();
-
-        // Для каждой башни создаем кнопку
-        for (TowerConfig towerConfig : gameController.getTowersForSelect()) {
-            VBox towerBox = new VBox(5); // Контейнер для кнопок башни и её апгрейдов
-
-            // Кнопка для выбора башни
-            Button towerButton = new Button(towerConfig.getName());
-            towerButton.setOnAction(e -> gameController.selectTower(towerConfig));
-
-            // Кнопка для открытия окна улучшений
-            Button upgradesButton = new Button("Upgrades");
-            upgradesButton.setOnAction(e -> showUpgradesWindow(gameController, towerConfig));
-
-            // Добавляем кнопки в контейнер
-            towerBox.getChildren().addAll(towerButton, upgradesButton);
-
-            // Добавляем контейнер в панель
-            towerListPanel.getChildren().add(towerBox);
-        }
+        towerView.viewTowersForSelect(towerListPanel);
 
         // Создание кнопки для меню
         Button menuButton = new Button("Menu");
@@ -102,55 +85,6 @@ public class GameView {
             }
         });
     }
-
-    private void showUpgradesWindow(GameController gameController, TowerConfig towerConfig) {
-        Stage upgradesStage = new Stage();
-        upgradesStage.setTitle("Upgrades for " + towerConfig.getName());
-
-        VBox upgradesLayout = new VBox(10);
-        upgradesLayout.setStyle("-fx-padding: 10; -fx-background-color: #F5F5F5;");
-
-        // Получаем дерево технологий для башни
-        TechTree techTree = towerConfig.getTechTree();
-        if (techTree != null) {
-            for (TechNode techNode : techTree.getRoots()) {
-                addTechNodeToView(techNode, upgradesLayout, gameController);
-            }
-        } else {
-            upgradesLayout.getChildren().add(new Button("No upgrades available"));
-        }
-
-        Scene upgradesScene = new Scene(upgradesLayout, 400, 600);
-        upgradesStage.setScene(upgradesScene);
-        upgradesStage.show();
-    }
-
-    // Рекурсивно добавляет узлы дерева технологий в интерфейс
-    private void addTechNodeToView(TechNode node, VBox parentLayout, GameController gameController) {
-        HBox nodeBox = new HBox(10);
-        nodeBox.setStyle("-fx-padding: 5; -fx-background-color: #E8E8E8; -fx-border-color: #CCCCCC;");
-        nodeBox.setPrefHeight(40);
-
-        // Текст с описанием узла
-        String description = String.format("%s (Cost: %d)", node.getName(), node.getCost());
-        Button techButton = new Button(description);
-
-        // Кнопка для покупки улучшения
-        Button buyButton = new Button("Buy");
-        buyButton.setOnAction(e -> gameController.buyUpgrade(node));
-
-        // Проверяем доступность узла
-        buyButton.setDisable(!gameController.isUpgradeAvailable(node));
-
-        nodeBox.getChildren().addAll(techButton, buyButton);
-        parentLayout.getChildren().add(nodeBox);
-
-        // Рекурсивно добавляем дочерние узлы
-        for (TechNode child : node.getChildren()) {
-            addTechNodeToView(child, parentLayout, gameController);
-        }
-    }
-
 
     private void showMenu(GameController gameController) {
         this.menuStage = new Stage();
