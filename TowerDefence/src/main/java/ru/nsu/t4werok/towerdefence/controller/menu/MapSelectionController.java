@@ -55,7 +55,7 @@ public class MapSelectionController {
             );
 
             // Создание игрового движка с картой
-            GameEngine gameEngine = new GameEngine(gameMap, sceneController);
+            GameEngine gameEngine = new GameEngine(gameMap, sceneController, gameMap.getBase());
 
             // Запуск игрового движка
             gameEngine.start();

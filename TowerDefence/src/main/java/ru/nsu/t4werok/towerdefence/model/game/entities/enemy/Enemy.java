@@ -1,125 +1,60 @@
 package ru.nsu.t4werok.towerdefence.model.game.entities.enemy;
 
 import java.util.List;
-import java.util.Map;
 
 public class Enemy {
     private int lifePoints;
-    private int speed;
+    private int speed; // Скорость в кадрах
     private int defense;
-    private Map<String, Integer> strengths; // Тип урона и эффективность
-    private Map<String, Integer> weaknesses; // Тип урона и слабость
+    private int damageToBase; // Урон по базе
     private int loot;
-    private String model;
     private List<String> animations;
-    private boolean isDead = false;
+    private boolean isDead;
+    private int currentPathIndex; // Индекс текущей точки на пути
+    private int x, y; // Координаты врага
 
     // Конструктор
-    public Enemy(int lifePoints, int speed, int defense, Map<String, Integer> strengths,
-                 Map<String, Integer> weaknesses, int loot, String model, List<String> animations) {
+    public Enemy(int lifePoints, int speed, int defense, int damageToBase, int loot, List<String> animations, int startX, int startY) {
         this.lifePoints = lifePoints;
         this.speed = speed;
         this.defense = defense;
-        this.strengths = strengths;
-        this.weaknesses = weaknesses;
+        this.damageToBase = damageToBase;
         this.loot = loot;
-        this.model = model;
         this.animations = animations;
+        this.isDead = false;
+        this.currentPathIndex = 0;
+        this.x = startX;
+        this.y = startY;
     }
 
     // Геттеры и сеттеры
-    public int getLifePoints() {
-        return lifePoints;
-    }
+    public int getLifePoints() { return lifePoints; }
+    public void setLifePoints(int lifePoints) { this.lifePoints = lifePoints; }
+    public int getSpeed() { return speed; }
+    public void setSpeed(int speed) { this.speed = speed; }
+    public int getDamageToBase() { return damageToBase; }
+    public boolean isDead() { return isDead; }
+    public void setDead(boolean isDead) { this.isDead = isDead; }
+    public int getLoot() { return loot; }
 
-    public void setLifePoints(int lifePoints) {
-        this.lifePoints = lifePoints;
-    }
 
-    public int getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(int speed) {
-        this.speed = speed;
-    }
-
-    public int getDefense() {
-        return defense;
-    }
-
-    public void setDefense(int defense) {
-        this.defense = defense;
-    }
-
-    public Map<String, Integer> getStrengths() {
-        return strengths;
-    }
-
-    public void setStrengths(Map<String, Integer> strengths) {
-        this.strengths = strengths;
-    }
-
-    public Map<String, Integer> getWeaknesses() {
-        return weaknesses;
-    }
-
-    public void setWeaknesses(Map<String, Integer> weaknesses) {
-        this.weaknesses = weaknesses;
-    }
-
-    public int getLoot() {
-        return loot;
-    }
-
-    public void setLoot(int loot) {
-        this.loot = loot;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
-    }
-
-    public List<String> getAnimations() {
-        return animations;
-    }
-
-    public void setAnimations(List<String> animations) {
-        this.animations = animations;
-    }
-
-    public boolean isDead() {
-        return isDead;
-    }
-
-    public void setDead(boolean dead) {
-        isDead = dead;
-    }
-
-    // Методы для обработки повреждений
-    public void takeDamage(String damageType, int damage) {
-        int effectiveDamage = damage;
-        if (strengths.containsKey(damageType)) {
-            effectiveDamage -= strengths.get(damageType); // Уменьшение урона
-        } else if (weaknesses.containsKey(damageType)) {
-            effectiveDamage += weaknesses.get(damageType); // Увеличение урона
-        }
-        effectiveDamage -= defense; // Учёт защиты
-        if (effectiveDamage > 0) {
-            lifePoints -= effectiveDamage;
-        }
-
-        if (lifePoints <= 0) {
-            onDeath();
+    // Логика движения по пути
+    public void move(List<Integer[]> path) {
+        if (currentPathIndex < path.size()) {
+            Integer[] nextPoint = path.get(currentPathIndex);
+            this.x = nextPoint[0];
+            this.y = nextPoint[1];
+            currentPathIndex++;
+        } else {
+            // Достигнута база
+            setDead(true); // Враг считается мертвым, когда достиг базы
         }
     }
 
-    private void onDeath() {
-        System.out.println("Enemy defeated! Dropped loot: " + loot);
-        // Write some logic
+    public void takeDamage(int damage) {
+        this.lifePoints -= damage;
+        if (this.lifePoints <= 0) {
+            setDead(true);
+        }
     }
 }

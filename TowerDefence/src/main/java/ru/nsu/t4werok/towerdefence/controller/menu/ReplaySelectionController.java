@@ -31,7 +31,21 @@ public class ReplaySelectionController {
         fileChooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("JSON Files", "*.json")
         );
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home") + "/Documents/Games/Tower Defence/Replays"));
+
+        String replayDirPath = System.getProperty("user.home") + "/Documents/Games/Tower Defence/Replays";
+        File replayDir = new File(replayDirPath);
+
+        // Проверяем, существует ли папка, и создаём её, если она отсутствует
+        if (!replayDir.exists()) {
+            if (replayDir.mkdirs()) {
+                System.out.println("Replay directory created: " + replayDirPath);
+            } else {
+                System.err.println("Failed to create replay directory: " + replayDirPath);
+            }
+        }
+
+        fileChooser.setInitialDirectory(replayDir);
         return fileChooser.showOpenDialog(null);
     }
+
 }
