@@ -9,6 +9,7 @@ public class TechNode {
     private final Integer cost; // Стоимость изучения технологии
     private final List<TechNode> prerequisites; // Необходимые технологии для разблокировки
     private final List<TechNode> children; // Дочерние узлы (связанные технологии)
+    private boolean unlocked = false;
 
     public TechNode(String name, String description, int cost) {
         this.name = name;
@@ -52,5 +53,13 @@ public class TechNode {
     // Получить дочерние технологии
     public List<TechNode> getChildren() {
         return children;
+    }
+
+    public boolean isUnlocked() {
+        return unlocked;
+    }
+
+    public void setUnlocked(boolean unlocked) {
+        this.unlocked = unlocked;
     }
 }

@@ -7,21 +7,30 @@ import java.io.IOException;
 import java.util.List;
 
 public class TechTreeConfig {
-    private List<TechNodeConfig> nodes;
+    private String name;
+    private List<TechNodeConfig> roots;
 
-    public List<TechNodeConfig> getNodes() {
-        return nodes;
+    public String getName() {
+        return name;
     }
 
-    public void setNodes(List<TechNodeConfig> nodes) {
-        this.nodes = nodes;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<TechNodeConfig> getRoots() {
+        return roots;
+    }
+
+    public void setRoots(List<TechNodeConfig> roots) {
+        this.roots = roots;
     }
 
     // Метод для загрузки данных из JSON в текущий объект
     public void loadFromJson(String filePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         TechTreeConfig loadedConfig = mapper.readValue(new File(filePath), TechTreeConfig.class);
-        this.nodes = loadedConfig.getNodes();
+        this.roots = loadedConfig.getRoots();
     }
 
     // Метод для сохранения текущего объекта в JSON

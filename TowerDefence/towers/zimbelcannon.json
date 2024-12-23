@@ -1,10 +1,10 @@
 {
-  "name": "Zimbel's cannon",
+  "name": "Zimbel cannon",
   "price": 150,
   "damage": 25,
   "damageType": "physical",
   "fireRate": 1.2,
-  "upgradeLevel": 1,
-  "visualEffect": "flame"
+  "visualEffect": "flame",
+  "attackRadius": 6
 }
 

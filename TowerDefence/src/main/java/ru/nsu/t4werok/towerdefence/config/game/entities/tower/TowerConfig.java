@@ -1,5 +1,7 @@
 package ru.nsu.t4werok.towerdefence.config.game.entities.tower;
 
+import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
+
 public class TowerConfig {
     private String name;
 
@@ -15,8 +17,11 @@ public class TowerConfig {
     // Скорость стрельбы (в млск)
     private long fireRate;
 
+    private TechTree techTree;
+
     // Текущий уровень улучшения башни
 //    private int upgradeLevel;
+
 
     public double getAttackRadius() {
         return attackRadius;
@@ -79,6 +84,15 @@ public class TowerConfig {
 //    public void setUpgradeLevel(int upgradeLevel) {
 //        this.upgradeLevel = upgradeLevel;
 //    }
+
+
+    public TechTree getTechTree() {
+        return techTree;
+    }
+
+    public void setTechTree(TechTree techTree) {
+        this.techTree = techTree;
+    }
 
     public String getVisualEffect() {
         return visualEffect;

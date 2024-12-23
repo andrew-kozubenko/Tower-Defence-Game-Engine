@@ -1,0 +1,28 @@
+{
+  "name": "Philosophic tower",
+  "roots": [
+    {
+      "name": "IncreaseHealth",
+      "description": "Increases the player's maximum health.",
+      "cost": 100,
+      "prerequisites": [],
+      "children": [
+        {
+          "name": "ImproveWeaponDamage",
+          "description": "Improves the damage of towers.",
+          "cost": 150,
+          "prerequisites": [],
+          "children": [
+            {
+              "name": "UnlockNewTower",
+              "description": "Unlocks a new type of tower.",
+              "cost": 200,
+              "prerequisites": [],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

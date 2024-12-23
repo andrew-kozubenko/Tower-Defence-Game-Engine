@@ -18,7 +18,7 @@ public class PlayerState {
         this.name = name;
         this.level = 1;
         this.experience = 0;
-        this.coins = 0;
+        this.coins = 500;
         this.health = initialHealth;
         this.maxHealth = initialHealth;
         this.techTree = new TechTree();
@@ -57,6 +57,10 @@ public class PlayerState {
     // Получить количество монет
     public int getCoins() {
         return coins;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
     }
 
     // Добавить монеты игроку
