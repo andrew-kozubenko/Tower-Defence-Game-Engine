@@ -4,16 +4,15 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerSelectionConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
+import ru.nsu.t4werok.towerdefence.view.game.entities.map.MapView;
 
 import java.util.List;
 
@@ -22,6 +21,8 @@ public class GameView {
     private final Canvas canvas; // Полотно для рисования
     private final VBox towerListPanel; // Панель для отображения доступных башен
     private final GameMap gameMap; // Ссылка на карту для отображения
+    private final MapView mapView;
+    private Stage menuStage;
 
     public GameView(GameController gameController) {
         canvas = new Canvas(800, 600);
@@ -29,6 +30,7 @@ public class GameView {
 
         gameMap = gameController.getGameMap();
 
+        mapView = new MapView(canvas, gameMap);
 
         // Панель для башен справа
         towerListPanel = new VBox(10);
@@ -69,63 +71,26 @@ public class GameView {
         });
 
         // Рисуем карту
-        renderMap(gc);
+        mapView.renderMap(gc);
     }
-
-    private void renderMap(GraphicsContext gc) {
-        // Отображение фона карты
-        Image backgroundImage = gameMap.getBackgroundImage();
-        if (backgroundImage != null) {
-            gc.drawImage(backgroundImage, 0, 0, canvas.getWidth(), canvas.getHeight());
-        } else {
-            System.out.println("No background image found, using default.");
-            gc.setFill(Color.LIGHTGRAY);
-            gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        }
-
-        // Отрисовка доступных позиций для башен
-        gc.setFill(Color.GREEN);
-        for (Integer[] position : gameMap.getTowerPositions()) {
-            gc.fillRect(position[0] * 50, position[1] * 50, 50, 50);
-        }
-
-        // Отрисовка пути врагов
-        gc.setStroke(Color.RED);
-        gc.setLineWidth(3);
-        for (List<Integer[]> path : gameMap.getEnemyPaths()) {
-            for (int i = 0; i < path.size() - 1; i++) {
-                Integer[] start = path.get(i);
-                Integer[] end = path.get(i + 1);
-                gc.strokeLine(
-                        start[0] * 50 + 25, start[1] * 50 + 25,
-                        end[0] * 50 + 25, end[1] * 50 + 25
-                );
-            }
-        }
-
-        // Отрисовка базы
-        gc.setFill(Color.BLUE);
-        int baseX = gameMap.getBase().getX();
-        int baseY = gameMap.getBase().getY();
-        gc.fillRect(baseX * 50, baseY * 50, 50, 50); // Рисуем базу
-    }
-
 
     private void showMenu(GameController gameController) {
-        Stage menuStage = new Stage();
+        this.menuStage = new Stage();
         VBox menuLayout = new VBox(10);
         menuLayout.setStyle("-fx-padding: 20;");
 
         // Кнопки в меню
         Button settingsButton = new Button("Settings");
-        settingsButton.setOnAction(e -> gameController.openSettings());
-        Button backButton = new Button("Back");
-        backButton.setOnAction(e -> gameController.goBack());
+        settingsButton.setOnAction(e -> gameController.openSettings(menuStage));
+        Button backGameButton = new Button("Back to game");
+        backGameButton.setOnAction(e -> gameController.backToGame(menuStage));
+        Button backMenuButton = new Button("Back to menu");
+        backMenuButton.setOnAction(e -> gameController.backToMenu(menuStage));
         Button exitButton = new Button("Exit");
         exitButton.setOnAction(e -> System.exit(0));
 
         // Добавляем кнопки в меню
-        menuLayout.getChildren().addAll(settingsButton, backButton, exitButton);
+        menuLayout.getChildren().addAll(settingsButton, backGameButton, backMenuButton, exitButton);
 
         // Создаём сцену для меню
         Scene menuScene = new Scene(menuLayout, 200, 150);

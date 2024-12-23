@@ -7,6 +7,12 @@ public class Tower {
     private int x;
     private int y;
 
+    // Время последней атаки (в миллисекундах)
+    private long lastAttackTime;
+
+    // Радиус действия башни (в игровых единицах)
+    private double attackRadius;
+
     // Стоимость строительства или улучшения башни
     private int price;
 
@@ -16,8 +22,8 @@ public class Tower {
     // Тип урона, например, физический, магический и т.д.
     private String damageType;
 
-    // Скорость стрельбы (в выстрелах в секунду)
-    private double fireRate;
+    // Скорость стрельбы (в млс)
+    private long fireRate;
 
     // Текущий уровень улучшения башни
     private int upgradeLevel;
@@ -25,15 +31,6 @@ public class Tower {
     // Визуальный эффект башни (например, анимация или цвет)
     private String visualEffect;
 
-    /**
-     * Конструктор для создания новой башни с координатами.
-     * @param x
-     * @param y
-     */
-    public Tower(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
 
     /**
      * Конструктор для создания новой башни с указанными параметрами.
@@ -43,8 +40,11 @@ public class Tower {
      * @param damageType Тип урона (например, "физический" или "магический").
      * @param fireRate Скорость стрельбы (выстрелы в секунду).
      * @param visualEffect Визуальный эффект (например, "огонь" или "магия").
+     * @param x Координата X.
+     * @param y Координата Y.
+     * @param attackRadius Радиус атаки.
      */
-    public Tower(String name, int price, int damage, String damageType, double fireRate, String visualEffect) {
+    public Tower(String name, int price, int damage, String damageType, long fireRate, String visualEffect, int x, int y, double attackRadius) {
         this.name = name;
         this.price = price;
         this.damage = damage;
@@ -52,6 +52,10 @@ public class Tower {
         this.fireRate = fireRate;
         this.upgradeLevel = 1; // Установим начальный уровень улучшений
         this.visualEffect = visualEffect;
+        this.x = x;
+        this.y = y;
+        this.attackRadius = attackRadius;
+        this.lastAttackTime = 0;
     }
 
     // Геттеры и сеттеры для доступа к полям
@@ -152,11 +156,27 @@ public class Tower {
         this.damageType = damageType;
     }
 
-    public void setFireRate(double fireRate) {
+    public void setFireRate(long fireRate) {
         this.fireRate = fireRate;
     }
 
     public void setUpgradeLevel(int upgradeLevel) {
         this.upgradeLevel = upgradeLevel;
+    }
+
+    public double getAttackRadius() {
+        return attackRadius;
+    }
+
+    public void setAttackRadius(double attackRadius) {
+        this.attackRadius = attackRadius;
+    }
+
+    public long getLastAttackTime() {
+        return lastAttackTime;
+    }
+
+    public void setLastAttackTime(long lastAttackTime) {
+        this.lastAttackTime = lastAttackTime;
     }
 }

@@ -12,11 +12,22 @@ public class TowerConfig {
     // Тип урона, например, физический, магический и т.д.
     private String damageType;
 
-    // Скорость стрельбы (в выстрелах в секунду)
-    private double fireRate;
+    // Скорость стрельбы (в млск)
+    private long fireRate;
 
     // Текущий уровень улучшения башни
-    private int upgradeLevel;
+//    private int upgradeLevel;
+
+    public double getAttackRadius() {
+        return attackRadius;
+    }
+
+    public void setAttackRadius(double attackRadius) {
+        this.attackRadius = attackRadius;
+    }
+
+    // Радиус атаки башни
+    private double attackRadius;
 
     // Визуальный эффект башни (например, анимация или цвет)
     private String visualEffect;
@@ -53,21 +64,21 @@ public class TowerConfig {
         this.damageType = damageType;
     }
 
-    public double getFireRate() {
+    public long getFireRate() {
         return fireRate;
     }
 
-    public void setFireRate(double fireRate) {
+    public void setFireRate(long fireRate) {
         this.fireRate = fireRate;
     }
 
-    public int getUpgradeLevel() {
-        return upgradeLevel;
-    }
-
-    public void setUpgradeLevel(int upgradeLevel) {
-        this.upgradeLevel = upgradeLevel;
-    }
+//    public int getUpgradeLevel() {
+//        return upgradeLevel;
+//    }
+//
+//    public void setUpgradeLevel(int upgradeLevel) {
+//        this.upgradeLevel = upgradeLevel;
+//    }
 
     public String getVisualEffect() {
         return visualEffect;
