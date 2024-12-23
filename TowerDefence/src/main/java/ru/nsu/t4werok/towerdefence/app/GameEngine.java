@@ -4,6 +4,8 @@ import javafx.animation.AnimationTimer;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.controller.game.entities.tower.TowerController;
+import ru.nsu.t4werok.towerdefence.controller.menu.SettingsController;
+import ru.nsu.t4werok.towerdefence.managers.menu.SettingsManager;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
@@ -26,11 +28,16 @@ public class GameEngine {
     private final GameController gameController;
     private final GameView gameView;
     private final SceneController sceneController;
+    private final SettingsManager settingsManager = SettingsManager.getInstance();
+
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
 
     public GameEngine(GameMap gameMap, SceneController sceneController) {
         this.gameMap = gameMap;
         this.sceneController = sceneController;
-        this.gameController = new GameController(sceneController, gameMap, towers);
+        this.gameController = new GameController(this, sceneController, gameMap, towers);
         this.gameView = new GameView(gameController);
         // Добавляем игровую сцену в SceneController
         sceneController.addScene("Game", gameView.getScene());
@@ -40,6 +47,7 @@ public class GameEngine {
 
     public void start() {
         running = true;
+        settingsManager.setRunningGame(true);
 
         this.towersForSelect = gameController.loadTowerFromConfigs("towers");
 

@@ -42,7 +42,11 @@ public class SettingsController {
     }
 
     public void onBackButtonPressed() {
-        sceneController.switchTo("MainMenu");
+        if(!settingsManager.isRunningGame()) {
+            sceneController.switchTo("MainMenu");
+        } else {
+            sceneController.switchTo("Game");
+        }
     }
 }
 

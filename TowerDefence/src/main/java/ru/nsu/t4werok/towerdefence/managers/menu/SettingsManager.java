@@ -16,6 +16,15 @@ public class SettingsManager {
     private static SettingsManager instance = null;
     private SettingsConfig settingsConfig;
     private final SettingsSlectionConfig settingsSlectionConfig;
+    private boolean isRunningGame = false;
+
+    public boolean isRunningGame() {
+        return isRunningGame;
+    }
+
+    public void setRunningGame(boolean isRunningGame) {
+        this.isRunningGame = isRunningGame;
+    }
 
     private Stage mainStage; // Ссылка на главное окно приложения
 
