@@ -3,6 +3,8 @@ package ru.nsu.t4werok.towerdefence.model.game.entities.tower;
 import javafx.scene.image.Image;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tower {
     // Название башни (для идентификации)
@@ -37,6 +39,8 @@ public class Tower {
 
     // Картинка башни
     private Image imageTower;
+
+    private List<String> upgrades = new ArrayList<String>();
 
 
     /**
@@ -209,4 +213,11 @@ public class Tower {
         this.imageTower = imageTower;
     }
 
+    public List<String> getUpgrades() {
+        return upgrades;
+    }
+
+    public void addUpgrade(String upgrade) {
+        this.upgrades.add(upgrade);
+    }
 }

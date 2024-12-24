@@ -7,15 +7,20 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
+import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
 
-public class TechTreeView {
+import java.util.List;
 
-    public TechTreeView() {
+public class TechTreeView {
+    private final GameController gameController;
+
+    public TechTreeView(GameController gameController) {
+        this.gameController = gameController;
     }
 
-    public void showUpgradesWindow(GameController gameController, TowerConfig towerConfig) {
+    public void showUpgradesWindow(TowerConfig towerConfig) {
         Stage upgradesStage = new Stage();
         upgradesStage.setTitle("Upgrades for " + towerConfig.getName());
 
@@ -37,6 +42,42 @@ public class TechTreeView {
         upgradesStage.show();
     }
 
+    public void showTowerUpgradeMenu(Tower tower, List<TechTree> techTrees) {
+        Stage upgradeStage = new Stage();
+        VBox menuLayout = new VBox(10);
+        menuLayout.setStyle("-fx-padding: 20;");
+
+        TechTree techTree = null;
+        for (TechTree techTreeI : techTrees) {
+            if (techTreeI.getName().equals(tower.getName())) {
+                techTree = techTreeI;
+                break;
+            }
+        }
+
+        if (techTree == null) {
+            System.out.println("No tech tree associated with this tower.");
+            return;
+        }
+
+        // Получаем доступные улучшения
+        List<TechNode> availableUpgrades = techTree.getAvailableUpgrades(tower);
+
+        for (TechNode node : availableUpgrades) {
+            Button upgradeButton = new Button(node.getName() + " (" + node.getCost() + " coins)");
+            upgradeButton.setOnAction(e -> {
+                gameController.buyUpgradeForTower(tower, node);
+                upgradeStage.close();
+            });
+            menuLayout.getChildren().add(upgradeButton);
+        }
+
+        Scene upgradeScene = new Scene(menuLayout, 300, 200);
+        upgradeStage.setScene(upgradeScene);
+        upgradeStage.setTitle("Upgrades for " + tower.getName());
+        upgradeStage.show();
+    }
+
     // Рекурсивно добавляет узлы дерева технологий в интерфейс
     private void addTechNodeToView(TechNode node, VBox parentLayout, GameController gameController) {
         HBox nodeBox = new HBox(10);
@@ -53,6 +94,7 @@ public class TechTreeView {
 
         // Проверяем доступность узла
         buyButton.setDisable(!gameController.isUpgradeAvailable(node));
+//        buyButton.setDisable(!gameController.isBought(node));
 
         nodeBox.getChildren().addAll(techButton, buyButton);
         parentLayout.getChildren().add(nodeBox);

@@ -3,6 +3,8 @@ package ru.nsu.t4werok.towerdefence.controller.game.playerState.tech;
 import ru.nsu.t4werok.towerdefence.config.game.playerState.tech.TechNodeConfig;
 import ru.nsu.t4werok.towerdefence.config.game.playerState.tech.TechTreeConfig;
 import ru.nsu.t4werok.towerdefence.config.game.playerState.tech.TechTreeSelectionConfig;
+import ru.nsu.t4werok.towerdefence.managers.game.entities.tower.UpgradeManager;
+import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.PlayerState;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
@@ -32,7 +34,7 @@ public class TechTreeController {
 
     // Преобразование TechTreeConfig в TechTree
     private TechTree convertToTechTree(TechTreeConfig techTreeConfig) {
-        TechTree techTree = new TechTree();
+        TechTree techTree = new TechTree(techTreeConfig.getName());
         for (TechNodeConfig nodeConfig : techTreeConfig.getRoots()) {
             // Преобразуем каждый TechNodeConfig в TechNode и добавляем его в дерево технологий
             TechNode techNode = new TechNode(nodeConfig.getName(), nodeConfig.getDescription(), nodeConfig.getCost());
@@ -74,6 +76,21 @@ public class TechTreeController {
         // Совершаем покупку улучшения
         playerState.setCoins(currentResources - node.getCost()); // Вычитаем стоимость из ресурсов
         node.setUnlocked(true); // Устанавливаем флаг, что улучшение разблокировано
+
+        System.out.println("Upgrade " + node.getName() + " purchased successfully!");
+    }
+
+    public void buyUpgradeForTower(Tower tower, TechNode node) {
+        // Проверяем, хватает ли у игрока ресурсов на покупку улучшения
+        int currentResources = playerState.getCoins(); // Получаем текущие ресурсы игрока
+        if (currentResources < node.getCost()) {
+            System.out.println("Not enough resources to buy " + node.getName());
+            return;
+        }
+        // Совершаем покупку улучшения
+        playerState.setCoins(currentResources - node.getCost()); // Вычитаем стоимость из ресурсов
+        UpgradeManager.applyUpgrade(tower, node.getName());
+        tower.addUpgrade(node.getName());
 
         System.out.println("Upgrade " + node.getName() + " purchased successfully!");
     }
