@@ -145,11 +145,13 @@ public class TowerController {
         double closestDistance = tower.getAttackRadius(); // Максимальное расстояние в радиусе атаки
 
         for (Enemy enemy : enemies) {
+
             double distance = Math.sqrt(Math.pow(enemy.getX() - tower.getX(), 2) + Math.pow(enemy.getY() - tower.getY(), 2));
-            if (distance <= tower.getAttackRadius() && (nearestEnemy == null || distance < closestDistance)) {
+            if (distance <= tower.getAttackRadius() && (nearestEnemy == null || distance > closestDistance)) {
                 nearestEnemy = enemy;
                 closestDistance = distance;
             }
+
         }
 
         return nearestEnemy; // Возвращаем ближайшего врага или null, если нет подходящего

@@ -17,7 +17,7 @@ public class PlayerState {
         this.name = name;
         this.level = 1;
         this.experience = 0;
-        this.coins = 500;
+        this.coins = 0;
         this.health = initialHealth;
         this.maxHealth = initialHealth;
     }

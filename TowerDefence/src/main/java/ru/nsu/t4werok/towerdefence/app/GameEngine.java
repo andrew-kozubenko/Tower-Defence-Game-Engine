@@ -139,6 +139,7 @@ public class GameEngine {
 
         // Проверка поражения
         if (base.getHealth() <= 0) {
+            gameController.
             stop();
             System.out.println("Game Over!");
         }
@@ -154,6 +155,8 @@ public class GameEngine {
             towerView.renderTower(tower);
             if (tower.getAttackX() != -1) {
                 towerView.renderBullets(tower, 5);
+                tower.setAttackX(-1);
+                tower.setAttackX(-1);
             }
         }
         allEnemiesView.renderEnemies(gc, enemies);
