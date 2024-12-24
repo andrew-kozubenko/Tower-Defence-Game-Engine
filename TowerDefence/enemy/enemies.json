@@ -1,0 +1,28 @@
+{
+  "enemies": [
+    {
+      "id": 1,
+      "lifePoints": 30,
+      "speed": 10,
+      "defense": 5,
+      "damageToBase": 10,
+      "loot": 20
+    },
+    {
+      "id": 2,
+      "lifePoints": 45,
+      "speed": 8,
+      "defense": 10,
+      "damageToBase": 15,
+      "loot": 30
+    },
+    {
+      "id": 3,
+      "lifePoints": 60,
+      "speed": 6,
+      "defense": 15,
+      "damageToBase": 20,
+      "loot": 50
+    }
+  ]
+}
