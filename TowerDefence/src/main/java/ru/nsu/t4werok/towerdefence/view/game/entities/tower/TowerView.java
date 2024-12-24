@@ -8,6 +8,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
+import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.view.game.playerState.tech.TechTreeView;
 
@@ -17,11 +18,13 @@ public class TowerView {
     private final GraphicsContext gc;
     private final GameController gameController;
     private final TechTreeView techTreeView = new TechTreeView();
+    private final GameMap gameMap;
 
-    public TowerView(GameController gameController, GraphicsContext gc, Canvas canvas) {
+    public TowerView(GameController gameController, GraphicsContext gc, Canvas canvas, GameMap gameMap) {
         this.gc = gc;
         this.canvas = canvas;
         this.gameController = gameController;
+        this.gameMap = gameMap;
     }
 
     public void viewTowersForSelect(VBox towerListPanel) {
@@ -46,27 +49,31 @@ public class TowerView {
 
     public void renderTower(Tower tower) {
         // Получаем изображение для башни
-        Image towerImage = tower.getImageTower();  // Это изображение, которое нужно отрисовать. Возможно, нужно будет создать метод getImage() в классе Tower.
+        Image towerImage = tower.getImageTower();
 
-        if (towerImage != null) {
-            // Размеры изображения до сжатия
-            double originalWidth = towerImage.getWidth();
-            double originalHeight = towerImage.getHeight();
-
-            // Сжимаем изображение в 20 раз
-            double scaleX = 1.0 / 2;  // Масштаб по оси X (сжимаем в 20 раз)
-            double scaleY = 1.0 / 2;  // Масштаб по оси Y (сжимаем в 20 раз)
-
-            // Определяем координаты башни на карте
-            int towerX = tower.getX();
-            int towerY = tower.getY();
-
-            // Преобразуем координаты башни в пиксели на канвасе
-            double pixelX = towerX * 2;  // Переводим в пиксели, используя размер клетки
-            double pixelY = towerY * 2;
-
-            // Рисуем изображение башни, сжимаем его по осям X и Y
-            gc.drawImage(towerImage, pixelX, pixelY, originalWidth * scaleX, originalHeight * scaleY);
+        // Проверяем, если изображение отсутствует, не рисуем ничего
+        if (towerImage == null) {
+            System.out.println("Tower image is missing for tower: " + tower.getName());
+            return;
         }
+
+        int cellWidth = (int) (canvas.getWidth() / gameMap.getWidth());
+        int cellHeight = (int) (canvas.getHeight() / gameMap.getHeight());
+
+        // Получаем координаты для отрисовки башни
+        int towerX = tower.getX();  // X-координата расположения башни (в клетках)
+        int towerY = tower.getY();  // Y-координата расположения башни (в клетках)
+
+
+        // Сжимаем изображение до размера клетки
+        double towerWidth = Math.min(towerImage.getWidth(), cellWidth);
+        double towerHeight = Math.min(towerImage.getHeight(), cellHeight);
+
+        // Преобразуем координаты в пиксели, умножив на размер клетки
+        double pixelX = towerX * cellWidth;
+        double pixelY = towerY * cellHeight;
+
+        // Отображаем изображение башни на канвасе с заданными координатами и размерами
+        gc.drawImage(towerImage, pixelX, pixelY, towerWidth, towerHeight);
     }
 }

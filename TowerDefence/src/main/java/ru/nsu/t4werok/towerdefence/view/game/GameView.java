@@ -33,7 +33,7 @@ public class GameView {
         gameMap = gameController.getGameMap();
         mapView = new MapView(gc, canvas, gameMap);
 
-        towerView = new TowerView(gameController, gc, canvas);
+        towerView = new TowerView(gameController, gc, canvas, gameMap);
 
         // Панель для башен справа
         towerListPanel = new VBox(10);
@@ -77,8 +77,15 @@ public class GameView {
                 int x = (int) e.getX();
                 int y = (int) e.getY();
 
+                int cellWidth = (int) (canvas.getWidth() / gameMap.getWidth());
+                int cellHeight = (int) (canvas.getHeight() / gameMap.getHeight());
+
+                int towerXCell = x / cellWidth;  // Координата клетки по оси X
+                int towerYCell = y / cellHeight; // Координата клетки по оси Y
+
+
                 // Передаем координаты в контроллер
-                Tower tower = gameController.placeTower(x, y);
+                Tower tower = gameController.placeTower(towerXCell, towerYCell);
                 if (tower != null) {
                     towerView.renderTower(tower);
                 }
