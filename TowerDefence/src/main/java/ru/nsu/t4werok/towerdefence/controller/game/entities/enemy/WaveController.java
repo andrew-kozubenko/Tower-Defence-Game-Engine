@@ -27,8 +27,11 @@ public class WaveController {
     }
 
     public boolean updateWave(List<Enemy> enemies, Integer[] spawnPoint, int cellSizeX, int cellSizeY) {
-        if (stopped || !waveActive) {
+        if (stopped) {
             return false;
+        }
+        if (!waveActive){
+            return true;
         }
 
         numberOfTicks++;
@@ -38,8 +41,14 @@ public class WaveController {
             numberOfEnemy++;
 
             if (wavesConfig.getWaves()[numberOfWave].getEnemies().length == numberOfEnemy) {
+                if (numberOfWave >= wavesConfig.getWaves().length) {
+                    stopped = true;
+                    System.out.println("All waves completed");
+                    return false;
+                }
                 numberOfEnemy = 0;
                 waveActive = false; // Останавливаем волну до вызова nextWave()
+                System.out.println("StopWave");
             }
 
             spawnEnemy(enemies, spawnPoint, cellSizeX, cellSizeY);
@@ -48,19 +57,20 @@ public class WaveController {
         return true;
     }
 
-    public void nextWave() {
+    public boolean nextWave() {
         if (stopped) {
-            return;
+            return false;
         }
-
-        if (numberOfWave >= wavesConfig.getWaves().length) {
-            stopped = true;
-            System.out.println("All waves completed");
-            return;
-        }
+        numberOfWave+=1;
 
         waveActive = true;
         System.out.println("Wave " + (numberOfWave + 1) + " started");
+
+        if(numberOfWave >= wavesConfig.getWaves().length - 1){
+            return true;
+        }
+
+        return false;
     }
 
     public void spawnEnemy(List<Enemy> enemies, Integer[] spawnPoint, int cellSizeX, int cellSizeY) {

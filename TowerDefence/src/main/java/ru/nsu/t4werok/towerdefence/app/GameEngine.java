@@ -113,6 +113,7 @@ public class GameEngine {
 
     public void stop() {
         running = false;
+        gameView.deleteButtonNextWave();
     }
 
     public void update() {
@@ -158,6 +159,8 @@ public class GameEngine {
         allEnemiesView.renderEnemies(gc, enemies);
     }
 
-
+    public boolean nextWave(){
+        return waveController.nextWave();
+    }
 
 }

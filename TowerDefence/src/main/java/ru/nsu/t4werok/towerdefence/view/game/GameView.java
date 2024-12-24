@@ -23,6 +23,7 @@ public class GameView {
     private final MapView mapView;
     private final TowerView towerView;
     private Stage menuStage;
+    private final Button startButton;
 
 
     private final GraphicsContext gc;
@@ -47,12 +48,21 @@ public class GameView {
         gameController.loadTowersForSelect();
         towerView.viewTowersForSelect(towerListPanel);
 
-        Button startButton = new Button("Старт");
+
+        startButton = new Button("Start");
         startButton.setOnAction(e -> {
-            engine.start();
-            towerListPanel.getChildren().remove(startButton);
+            // Логика первого нажатия
+            engine.start(); // Запуск игры
+            startButton.setText("NextWave"); // Изменение текста кнопки
+
+            // Изменение действия кнопки на "NextWave"
+            startButton.setOnAction(event -> {
+                if(engine.nextWave()){
+                    deleteButtonNextWave();// Вызов следующей волны
+                }
+                System.out.println("Next wave started!");
+            });
         });
-        startButton.setStyle("-fx-font-size: 14px; -fx-padding: 5;");
 
         // Добавляем кнопку в панель башен
         towerListPanel.getChildren().add(startButton);
@@ -132,6 +142,10 @@ public class GameView {
         menuStage.setScene(menuScene);
         menuStage.setTitle("Game Menu");
         menuStage.show();
+    }
+
+    public void deleteButtonNextWave(){
+        towerListPanel.getChildren().remove(startButton);
     }
 
     public Scene getScene() {
