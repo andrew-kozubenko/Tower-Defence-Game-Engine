@@ -139,7 +139,6 @@ public class GameEngine {
 
         // Проверка поражения
         if (base.getHealth() <= 0) {
-            gameController.
             stop();
             System.out.println("Game Over!");
         }
