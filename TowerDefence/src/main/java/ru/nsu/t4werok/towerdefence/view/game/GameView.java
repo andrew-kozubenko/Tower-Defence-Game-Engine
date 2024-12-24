@@ -23,9 +23,13 @@ public class GameView {
     private final TowerView towerView;
     private Stage menuStage;
 
+
+    private final GraphicsContext gc;
+
+
     public GameView(GameController gameController) {
         canvas = new Canvas(800, 600);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc = canvas.getGraphicsContext2D();
 
         gameMap = gameController.getGameMap();
         mapView = new MapView(gc, canvas, gameMap);
@@ -125,5 +129,13 @@ public class GameView {
 
     public Canvas getCanvas() {
         return canvas;
+    }
+
+    public GraphicsContext getGc() {
+        return gc;
+    }
+
+    public MapView getMapView() {
+        return mapView;
     }
 }

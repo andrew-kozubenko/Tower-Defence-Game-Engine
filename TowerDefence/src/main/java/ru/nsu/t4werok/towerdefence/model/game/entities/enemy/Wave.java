@@ -10,15 +10,13 @@ public class Wave {
     private final int interval; // Интервал появления врагов
     private boolean isRunning; // Флаг активности волны
     private int currentEnemyIndex; // Текущий индекс врага
-    private final List<Integer[]> path; // Путь для врагов
 
     // Конструктор
-    public Wave(List<Enemy> enemies, int interval, List<Integer[]> path) {
+    public Wave(List<Enemy> enemies, int interval) {
         this.enemies = new ArrayList<>(enemies);
         this.interval = interval;
         this.isRunning = false;
         this.currentEnemyIndex = 0;
-        this.path = path;
     }
 
     // Старт волны
@@ -68,7 +66,7 @@ public class Wave {
     // Появление врага
     private void spawnEnemy(Enemy enemy) {
         System.out.println("Spawned enemy");
-        enemy.move(path); // Перемещаем врага по пути
+
     }
 
     public List<Enemy> getEnemies() {
