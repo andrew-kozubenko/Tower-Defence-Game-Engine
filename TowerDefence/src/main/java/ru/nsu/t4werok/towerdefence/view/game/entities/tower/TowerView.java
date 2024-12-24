@@ -95,7 +95,7 @@ public class TowerView {
         double deltaY = (endY - startY) / (numBullets - 1);
 
         // Рисуем шарики
-        gc.setFill(Color.RED);
+        gc.setFill(Color.BLACK);
         for (int i = 0; i < numBullets; i++) {
             double bulletX = startX + i * deltaX;
             double bulletY = startY + i * deltaY;
