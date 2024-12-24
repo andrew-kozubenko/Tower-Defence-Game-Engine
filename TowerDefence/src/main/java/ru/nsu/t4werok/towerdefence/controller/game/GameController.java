@@ -10,6 +10,7 @@ import ru.nsu.t4werok.towerdefence.config.game.playerState.tech.TechTreeSelectio
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.entities.tower.TowerController;
 import ru.nsu.t4werok.towerdefence.controller.game.playerState.tech.TechTreeController;
+import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.PlayerState;
@@ -66,6 +67,11 @@ public class GameController {
     public void openSettings(Stage menuStage) {
         sceneController.switchTo("Settings");
         menuStage.close();
+    }
+
+
+    public void updateTower(List<Enemy> enemies) {
+        towerController.updateTowers(enemies);
     }
 
     public void backToGame(Stage menuStage) {

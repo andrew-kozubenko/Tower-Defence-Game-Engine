@@ -27,8 +27,10 @@ public class Tower {
     // Тип урона, например, физический, магический и т.д.
     private String damageType;
 
-    // Скорость стрельбы (в млс)
-    private long fireRate;
+    // Скорость стрельбы (в атаке)
+    private double fireRate;
+
+    private double reloadCounter; // Счетчик оставшихся итераций до следующей атаки
 
     // Текущий уровень улучшения башни
     private int upgradeLevel;
@@ -54,7 +56,7 @@ public class Tower {
      * @param y Координата Y.
      * @param attackRadius Радиус атаки.
      */
-    public Tower(String name, int price, int damage, String damageType, long fireRate, String visualEffect, int x,
+    public Tower(String name, int price, int damage, String damageType, double fireRate, String visualEffect, int x,
                  int y, double attackRadius, String imageTowerPath) {
         this.name = name;
         this.price = price;
@@ -187,7 +189,7 @@ public class Tower {
         this.damageType = damageType;
     }
 
-    public void setFireRate(long fireRate) {
+    public void setFireRate(double fireRate) {
         this.fireRate = fireRate;
     }
 
@@ -225,6 +227,13 @@ public class Tower {
 
     public void setCurrentTarget(Enemy currentTarget) {
         this.currentTarget = currentTarget;
+    }
+    public double getReloadCounter() {
+        return reloadCounter;
+    }
+
+    public void setReloadCounter(double reloadCounter) {
+        this.reloadCounter = reloadCounter;
     }
 
 }
