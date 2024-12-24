@@ -19,13 +19,11 @@ public class Enemy {
     private int numberOfPath;
 
     // Конструктор
-    public Enemy(int lifePoints, int speed, int defense, int damageToBase, int loot, List<String> animations, int startX, int startY, int numberOfPath) {
+    public Enemy(int lifePoints, int speed, int damageToBase, int loot, int startX, int startY, int numberOfPath) {
         this.lifePoints = lifePoints;
         this.speed = speed;
-        this.defense = defense;
         this.damageToBase = damageToBase;
         this.loot = loot;
-        this.animations = animations;
         this.numberOfPath = numberOfPath;
         this.isDead = false;
         this.currentPathIndex = 0;
@@ -52,8 +50,9 @@ public class Enemy {
 
         // Получаем путь для врага
         List<Integer[]> path = map.getEnemyPaths().get(numberOfPath); // Путь в клетках
+        int someSpeed = speed;
+        while (currentPathIndex < path.size() && someSpeed > 0) {
 
-        while (currentPathIndex < path.size() && speed > 0) {
             Integer[] nextCell = path.get(currentPathIndex);
 
             // Вычисляем целевые координаты (центр следующей клетки)
@@ -75,7 +74,7 @@ public class Enemy {
                 y = targetY;
 
                 // Уменьшаем скорость на пройденное расстояние
-                speed -= Math.max(distanceX, distanceY);
+                someSpeed -= Math.max(distanceX, distanceY);
 
                 // Переходим к следующей точке
                 currentPathIndex++;
@@ -85,7 +84,7 @@ public class Enemy {
                 y += Integer.signum(dy) * Math.min(speed, distanceY);
 
                 // Обнуляем скорость, так как текущий шаг завершен
-                speed = 0;
+                someSpeed = 0;
             }
         }
 

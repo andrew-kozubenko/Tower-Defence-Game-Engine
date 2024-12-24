@@ -16,7 +16,9 @@ module ru.nsu.t4werok.towerdefence.app {
     exports ru.nsu.t4werok.towerdefence.controller;
     exports ru.nsu.t4werok.towerdefence.config.game.entities.tower;
     exports ru.nsu.t4werok.towerdefence.config.game.playerState.tech;
+    exports ru.nsu.t4werok.towerdefence.config.game.entities.enemy;
 
+    opens ru.nsu.t4werok.towerdefence.config.game.entities.enemy to com.fasterxml.jackson.databind;
     opens ru.nsu.t4werok.towerdefence.app to javafx.fxml;
     opens ru.nsu.t4werok.towerdefence.controller to javafx.fxml;
     opens ru.nsu.t4werok.towerdefence.model.game.entities.tower to com.fasterxml.jackson.databind;

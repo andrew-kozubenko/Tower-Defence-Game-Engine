@@ -1,14 +1,22 @@
 package ru.nsu.t4werok.towerdefence.config.game.entities.enemy;
 
-import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapConfig;
-
-import java.io.IOException;
-
 public class WaveConfig {
+    private int[] enemies;
+    private int interval;
 
-    public void loadFromJson(String filePath) throws IOException {
+    public int[] getEnemies() {
+        return enemies;
     }
 
-    public static void saveToJson(MapConfig config, String filePath) throws IOException {
+    public void setEnemies(int[] enemies) {
+        this.enemies = enemies;
+    }
+
+    public int getInterval() {
+        return interval;
+    }
+
+    public void setInterval(int interval) {
+        this.interval = interval;
     }
 }
