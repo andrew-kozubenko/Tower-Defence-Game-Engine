@@ -12,7 +12,6 @@ public class PlayerState {
     private int coins; // Валюта игрока
     private int health; // Здоровье игрока
     private int maxHealth; // Максимальное здоровье
-    private TechTree techTree; // Технологическое дерево игрока
 
     public PlayerState(String name, int initialHealth) {
         this.name = name;
@@ -21,7 +20,6 @@ public class PlayerState {
         this.coins = 500;
         this.health = initialHealth;
         this.maxHealth = initialHealth;
-        this.techTree = new TechTree();
     }
 
     // Получить имя игрока
@@ -112,20 +110,5 @@ public class PlayerState {
     public void increaseMaxHealth(int amount) {
         this.maxHealth += amount;
         this.health = Math.min(this.health, maxHealth); // Актуализировать текущее здоровье
-    }
-
-    // Получить технологическое дерево
-    public TechTree getTechTree() {
-        return techTree;
-    }
-
-    // Добавить корневую технологию в дерево
-    public void addRootTechNode(TechNode root) {
-        this.techTree.addRoot(root);
-    }
-
-    // Получить корневые технологии
-    public List<TechNode> getRootTechNodes() {
-        return this.techTree.getRoots();
     }
 }

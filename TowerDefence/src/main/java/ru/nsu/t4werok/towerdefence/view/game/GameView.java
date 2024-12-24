@@ -8,11 +8,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
-import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
-import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.view.game.entities.map.MapView;
 import ru.nsu.t4werok.towerdefence.view.game.entities.tower.TowerView;
@@ -76,24 +73,28 @@ public class GameView {
 
         // Обработчик клика по канвасу (для добавления башни)
         canvas.setOnMouseClicked(e -> {
+            // Получаем координаты клика
+            int x = (int) e.getX();
+            int y = (int) e.getY();
+
+            int cellWidth = (int) (canvas.getWidth() / gameMap.getWidth());
+            int cellHeight = (int) (canvas.getHeight() / gameMap.getHeight());
+
+            int towerXCell = x / cellWidth;  // Координата клетки по оси X
+            int towerYCell = y / cellHeight; // Координата клетки по оси Y
+
             if (gameController.getSelectedTower() != null) {
-                // Получаем координаты клика
-                int x = (int) e.getX();
-                int y = (int) e.getY();
-
-                int cellWidth = (int) (canvas.getWidth() / gameMap.getWidth());
-                int cellHeight = (int) (canvas.getHeight() / gameMap.getHeight());
-
-                int towerXCell = x / cellWidth;  // Координата клетки по оси X
-                int towerYCell = y / cellHeight; // Координата клетки по оси Y
-
-
-                // Передаем координаты в контроллер
                 Tower tower = gameController.placeTower(towerXCell, towerYCell);
                 if (tower != null) {
                     towerView.renderTower(tower);
                 }
+            } else if (gameController.checkTowerInCell(towerXCell, towerYCell)) {
+                Tower tower = gameController.getTowerAtCell(towerXCell, towerYCell);
+                if (tower != null) {
+                    towerView.showTowerUpgradeMenu(tower, gameController.getTechTrees());
+                }
             }
+            gameController.setSelectedTower(null);
         });
     }
 

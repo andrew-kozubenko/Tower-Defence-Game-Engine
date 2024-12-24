@@ -4,6 +4,8 @@ import javafx.scene.image.Image;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tower {
     // Название башни (для идентификации)
@@ -41,7 +43,11 @@ public class Tower {
     // Картинка башни
     private Image imageTower;
 
+
+    private List<String> upgrades = new ArrayList<String>();
+
     private Enemy currentTarget; // Текущая цель для атаки
+
 
 
     /**
@@ -221,6 +227,13 @@ public class Tower {
         this.imageTower = imageTower;
     }
 
+    public List<String> getUpgrades() {
+        return upgrades;
+    }
+
+    public void addUpgrade(String upgrade) {
+        this.upgrades.add(upgrade);
+    }
     public Enemy getCurrentTarget() {
         return currentTarget;
     }
@@ -228,6 +241,7 @@ public class Tower {
     public void setCurrentTarget(Enemy currentTarget) {
         this.currentTarget = currentTarget;
     }
+
     public double getReloadCounter() {
         return reloadCounter;
     }
