@@ -108,86 +108,71 @@ public class TowerController {
         return tower.getPrice() * (tower.getUpgradeLevel() + 1);
     }
 
-    /**
-     * Обновление состояния всех башен (атака врагов).
-     * @param enemies Список врагов на карте.
-     * @param currentTime Текущее игровое время.
-     */
+
+
+
+
     public void updateTowers(List<Enemy> enemies, long currentTime) {
         for (Tower tower : towers) {
-            // Находим ближайшего врага в радиусе башни
-            Enemy target = findNearestEnemy(tower, enemies);
-            if (target != null) {
-                // Атакуем врага
-                attackEnemy(tower, target, currentTime);
+            // Если башня уже выбрала цель, продолжаем стрелять по ней, пока она в радиусе
+            if (tower.getCurrentTarget() != null && isEnemyInRange(tower, tower.getCurrentTarget())) {
+                attackEnemy(tower, tower.getCurrentTarget(), currentTime);
+            } else {
+                // Ищем нового ближайшего врага, если текущий враг уничтожен или вышел из радиуса
+                Enemy target = findNearestEnemy(tower, enemies);
+                if (target != null) {
+                    tower.setCurrentTarget(target); // Устанавливаем нового врага
+                    attackEnemy(tower, target, currentTime); // Атакуем сразу, если цель найдена
+                }
             }
         }
     }
 
-    /**
-     * Поиск ближайшего врага в радиусе башни.
-     * @param tower Башня, которая ищет цель.
-     * @param enemies Список врагов.
-     * @return Ближайший враг или null, если врагов нет.
-     */
+
+    // Проверка, находится ли враг в радиусе атаки башни
+    private boolean isEnemyInRange(Tower tower, Enemy enemy) {
+        double distance = Math.sqrt(Math.pow(enemy.getX() - tower.getX(), 2) + Math.pow(enemy.getY() - tower.getY(), 2));
+        return distance <= tower.getAttackRadius();
+    }
+
+
+
+    // Поиск ближайшего врага для каждой башни
     private Enemy findNearestEnemy(Tower tower, List<Enemy> enemies) {
-//        return enemies.stream()
-//                .filter(enemy -> isEnemyInRange(tower, enemy))
-//                .min((e1, e2) -> Double.compare(
-//                        distance(tower.getX(), tower.getY(), e1.getX(), e1.getY()),
-//                        distance(tower.getX(), tower.getY(), e2.getX(), e2.getY())
-//                ))
-//                .orElse(null);
-        return null;
+        Enemy nearestEnemy = null;
+        double closestDistance = tower.getAttackRadius(); // Максимальное расстояние в радиусе атаки
+
+        for (Enemy enemy : enemies) {
+            double distance = Math.sqrt(Math.pow(enemy.getX() - tower.getX(), 2) + Math.pow(enemy.getY() - tower.getY(), 2));
+            if (distance <= tower.getAttackRadius() && (nearestEnemy == null || distance < closestDistance)) {
+                nearestEnemy = enemy;
+                closestDistance = distance;
+            }
+        }
+
+        return nearestEnemy; // Возвращаем ближайшего врага или null, если нет подходящего
     }
 
-    /**
-     * Проверка, находится ли враг в радиусе действия башни.
-     * @param tower Башня.
-     * @param enemy Враг.
-     * @return true, если враг в радиусе действия; false в противном случае.
-     */
-//    private boolean isEnemyInRange(Tower tower, Enemy enemy) {
-//        double distance = distance(tower.getX(), tower.getY(), enemy.getX(), enemy.getY());
-//        return distance <= tower.getAttackRadius();
-//    }
 
-
-    /**
-     * Вычисление расстояния между двумя точками.
-     * @param x1 Координата X первой точки.
-     * @param y1 Координата Y первой точки.
-     * @param x2 Координата X второй точки.
-     * @param y2 Координата Y второй точки.
-     * @return Расстояние между точками.
-     */
-    private double distance(int x1, int y1, int x2, int y2) {
-        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-    }
-
-    /**
-     * Атака врага башней.
-     * @param tower Башня, которая атакует.
-     * @param enemy Враг, который является целью.
-     * @param currentTime Текущее игровое время.
-     */
+    // Атака врага
     private void attackEnemy(Tower tower, Enemy enemy, long currentTime) {
-//        // Проверяем, готова ли башня стрелять
-//        if (currentTime - tower.getLastAttackTime() < tower.getFireRate()) {
-//            return; // Башня еще перезаряжается
-//        }
-//
-//        // Наносим урон врагу
-//        enemy.takeDamage(tower.getDamage());
-//        tower.setLastAttackTime(currentTime); // Обновляем время последней атаки
-//
-//        // Проверяем, уничтожен ли враг
-//        if (enemy.getHealth() <= 0) {
-//            System.out.println("Enemy destroyed at position: (" + enemy.getX() + ", " + enemy.getY() + ")");
-//        } else {
-//            System.out.println("Enemy attacked at position: (" + enemy.getX() + ", " + enemy.getY() + "), Remaining health: " + enemy.getHealth());
-//        }
+        if (currentTime - tower.getLastAttackTime() < tower.getFireRate()) {
+            return; // Башня еще перезаряжается
+        }
+
+        // Наносим урон врагу
+        enemy.takeDamage(tower.getDamage());
+        tower.setLastAttackTime(currentTime); // Обновляем время последней атаки
+
+        if (enemy.isDead()) {
+            System.out.println("Enemy destroyed at position: (" + enemy.getX() + ", " + enemy.getY() + ")");
+            tower.setCurrentTarget(null); // Убираем цель, если враг уничтожен
+        } else {
+            System.out.println("Enemy attacked at position: (" + enemy.getX() + ", " + enemy.getY() + "), Remaining health: " + enemy.getLifePoints());
+        }
     }
+
+
 
 
 }

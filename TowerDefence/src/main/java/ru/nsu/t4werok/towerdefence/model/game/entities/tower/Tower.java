@@ -1,6 +1,7 @@
 package ru.nsu.t4werok.towerdefence.model.game.entities.tower;
 
 import javafx.scene.image.Image;
+import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 
 import java.io.File;
 
@@ -37,6 +38,8 @@ public class Tower {
 
     // Картинка башни
     private Image imageTower;
+
+    private Enemy currentTarget; // Текущая цель для атаки
 
 
     /**
@@ -78,6 +81,13 @@ public class Tower {
             this.imageTower = null;
         }
     }
+
+
+    // Метод вычисления расстояния до врага
+    public double distanceTo(int enemyX, int enemyY) {
+        return Math.sqrt(Math.pow(this.x - enemyX, 2) + Math.pow(this.y - enemyY, 2));
+    }
+
 
     // Геттеры и сеттеры для доступа к полям
 
@@ -207,6 +217,14 @@ public class Tower {
 
     public void setImageTower(Image imageTower) {
         this.imageTower = imageTower;
+    }
+
+    public Enemy getCurrentTarget() {
+        return currentTarget;
+    }
+
+    public void setCurrentTarget(Enemy currentTarget) {
+        this.currentTarget = currentTarget;
     }
 
 }
