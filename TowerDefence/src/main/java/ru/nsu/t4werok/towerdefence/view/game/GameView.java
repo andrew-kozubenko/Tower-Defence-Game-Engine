@@ -8,6 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.app.GameEngine;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
@@ -27,7 +28,7 @@ public class GameView {
     private final GraphicsContext gc;
 
 
-    public GameView(GameController gameController) {
+    public GameView(GameController gameController, GameEngine engine) {
         canvas = new Canvas(800, 600);
         gc = canvas.getGraphicsContext2D();
 
@@ -45,6 +46,16 @@ public class GameView {
         // Башни на выбор и прокачки
         gameController.loadTowersForSelect();
         towerView.viewTowersForSelect(towerListPanel);
+
+        Button startButton = new Button("Старт");
+        startButton.setOnAction(e -> {
+            engine.start();
+            towerListPanel.getChildren().remove(startButton);
+        });
+        startButton.setStyle("-fx-font-size: 14px; -fx-padding: 5;");
+
+        // Добавляем кнопку в панель башен
+        towerListPanel.getChildren().add(startButton);
 
         // Создание кнопки для меню
         Button menuButton = new Button("Menu");

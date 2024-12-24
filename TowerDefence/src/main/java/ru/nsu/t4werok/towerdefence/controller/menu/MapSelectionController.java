@@ -56,9 +56,6 @@ public class MapSelectionController {
 
             // Создание игрового движка с картой
             GameEngine gameEngine = new GameEngine(gameMap, sceneController, gameMap.getBase());
-
-            // Запуск игрового движка
-            gameEngine.start();
         } else {
             System.out.println("No map selected or map configuration is invalid.");
         }
