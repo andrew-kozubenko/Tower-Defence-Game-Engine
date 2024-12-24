@@ -43,6 +43,11 @@ public class Tower {
     // Картинка башни
     private Image imageTower;
 
+    // координы атаки
+    private int attackX;
+
+    private int attackY;
+
 
     private List<String> upgrades = new ArrayList<String>();
 
@@ -73,6 +78,8 @@ public class Tower {
         this.visualEffect = visualEffect;
         this.x = x;
         this.y = y;
+        this.attackX = -1;
+        this.attackY = -1;
         this.attackRadius = attackRadius;
         this.lastAttackTime = 0;
         try {
@@ -250,4 +257,19 @@ public class Tower {
         this.reloadCounter = reloadCounter;
     }
 
+    public int getAttackX() {
+        return attackX;
+    }
+
+    public void setAttackX(int attackX) {
+        this.attackX = attackX;
+    }
+
+    public int getAttackY() {
+        return attackY;
+    }
+
+    public void setAttackY(int attackY) {
+        this.attackY = attackY;
+    }
 }

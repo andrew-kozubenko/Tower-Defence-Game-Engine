@@ -4,6 +4,7 @@ import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.model.game.playerState.PlayerState;
 import ru.nsu.t4werok.towerdefence.view.game.entities.tower.TowerView;
 
 import java.util.ArrayList;
@@ -109,7 +110,7 @@ public class TowerController {
     }
 
 
-    public void updateTowers(List<Enemy> enemies) {
+    public void updateTowers(List<Enemy> enemies, PlayerState playerState) {
         for (Tower tower : towers) {
             if (tower.getReloadCounter() > 0) {
                 tower.setReloadCounter(tower.getReloadCounter() - 1);
@@ -117,13 +118,13 @@ public class TowerController {
 
             // Если башня уже выбрала цель, продолжаем стрелять по ней, пока она в радиусе
             if (tower.getCurrentTarget() != null && isEnemyInRange(tower, tower.getCurrentTarget())) {
-                attackEnemy(tower, tower.getCurrentTarget(), enemies);
+                attackEnemy(tower, tower.getCurrentTarget(), enemies, playerState);
             } else {
                 // Ищем нового ближайшего врага, если текущий враг уничтожен или вышел из радиуса
                 Enemy target = findNearestEnemy(tower, enemies);
                 if (target != null) {
                     tower.setCurrentTarget(target); // Устанавливаем нового врага
-                    attackEnemy(tower, target, enemies); // Атакуем сразу, если цель найдена
+                    attackEnemy(tower, target, enemies, playerState); // Атакуем сразу, если цель найдена
                 }
             }
         }
@@ -156,7 +157,7 @@ public class TowerController {
 
 
     // Атака врага
-    private void attackEnemy(Tower tower, Enemy enemy, List<Enemy> enemies) {
+    private void attackEnemy(Tower tower, Enemy enemy, List<Enemy> enemies, PlayerState playerState) {
         // Если башня ещё перезаряжается, пропускаем атаку
         if (tower.getReloadCounter() > 0) {
             return;
@@ -164,11 +165,14 @@ public class TowerController {
 
         // Наносим урон врагу
         enemy.takeDamage(tower.getDamage());
+        tower.setAttackX(enemy.getX());
+        tower.setAttackY(enemy.getY());
         tower.setReloadCounter(tower.getFireRate()); // Сбрасываем перезарядку
 
         if (enemy.isDead()) {
-            enemies.remove(enemy);
+            playerState.addCoins(enemy.getLoot());
             System.out.println("Enemy destroyed at position: (" + enemy.getX() + ", " + enemy.getY() + ")");
+            enemies.remove(enemy);
             tower.setCurrentTarget(null); // Убираем цель, если враг уничтожен
         } else {
             System.out.println("Enemy attacked at position: (" + enemy.getX() + ", " + enemy.getY() + "), Remaining health: " + enemy.getLifePoints());

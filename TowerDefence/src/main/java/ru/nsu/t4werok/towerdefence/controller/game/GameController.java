@@ -81,7 +81,7 @@ public class GameController {
 
 
     public void updateTower(List<Enemy> enemies) {
-        towerController.updateTowers(enemies);
+        towerController.updateTowers(enemies, playerState);
     }
 
     public void backToGame(Stage menuStage) {

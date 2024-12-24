@@ -148,10 +148,13 @@ public class GameEngine {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         gameView.getMapView().renderMap();
-        allEnemiesView.renderEnemies(gc, enemies);
         for (Tower tower : towers){
             towerView.renderTower(tower);
+            if (tower.getAttackX() != -1) {
+                towerView.renderBullets(tower, 5);
+            }
         }
+        allEnemiesView.renderEnemies(gc, enemies);
     }
 
 
