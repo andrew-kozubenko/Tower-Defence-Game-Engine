@@ -11,7 +11,8 @@ public class Enemy {
     private List<String> animations;
     private boolean isDead;
     private int currentPathIndex; // Индекс текущей точки на пути
-    private int x, y; // Координаты врага
+    private int x;
+    private int y; // Координаты врага
 
     // Конструктор
     public Enemy(int lifePoints, int speed, int defense, int damageToBase, int loot, List<String> animations, int startX, int startY) {
@@ -36,6 +37,21 @@ public class Enemy {
     public boolean isDead() { return isDead; }
     public void setDead(boolean isDead) { this.isDead = isDead; }
     public int getLoot() { return loot; }
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
 
 
     // Логика движения по пути
