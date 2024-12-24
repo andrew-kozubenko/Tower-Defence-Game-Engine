@@ -105,12 +105,7 @@ public class GameEngine {
         }
 
         // Обновление башен
-        for (Tower tower : towers) {
-            // Логика атаки башни на врагов
-        }
-
-        // Удаление мертвых врагов
-        enemies.removeIf(Enemy::isDead);
+        gameController.updateTower(enemies);
 
         // Проверка поражения
         if (base.getHealth() <= 0) {

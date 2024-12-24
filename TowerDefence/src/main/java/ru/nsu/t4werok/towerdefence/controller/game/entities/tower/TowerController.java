@@ -94,7 +94,7 @@ public class TowerController {
         tower.setUpgradeLevel(tower.getUpgradeLevel() + 1);
         tower.setDamage(tower.getDamage() + 10);
         tower.setAttackRadius(tower.getAttackRadius() + 1.0);
-        tower.setFireRate((long) (tower.getFireRate() * 0.9)); // Уменьшаем время перезарядки
+        tower.setFireRate(tower.getFireRate() * 0.9); // Уменьшаем время перезарядки
         System.out.println("Tower upgraded to level " + tower.getUpgradeLevel());
         return true;
     }
@@ -109,20 +109,21 @@ public class TowerController {
     }
 
 
-
-
-
-    public void updateTowers(List<Enemy> enemies, long currentTime) {
+    public void updateTowers(List<Enemy> enemies) {
         for (Tower tower : towers) {
+            if (tower.getReloadCounter() > 0) {
+                tower.setReloadCounter(tower.getReloadCounter() - 1);
+            }
+
             // Если башня уже выбрала цель, продолжаем стрелять по ней, пока она в радиусе
             if (tower.getCurrentTarget() != null && isEnemyInRange(tower, tower.getCurrentTarget())) {
-                attackEnemy(tower, tower.getCurrentTarget(), currentTime);
+                attackEnemy(tower, tower.getCurrentTarget(), enemies);
             } else {
                 // Ищем нового ближайшего врага, если текущий враг уничтожен или вышел из радиуса
                 Enemy target = findNearestEnemy(tower, enemies);
                 if (target != null) {
                     tower.setCurrentTarget(target); // Устанавливаем нового врага
-                    attackEnemy(tower, target, currentTime); // Атакуем сразу, если цель найдена
+                    attackEnemy(tower, target, enemies); // Атакуем сразу, если цель найдена
                 }
             }
         }
@@ -155,16 +156,18 @@ public class TowerController {
 
 
     // Атака врага
-    private void attackEnemy(Tower tower, Enemy enemy, long currentTime) {
-        if (currentTime - tower.getLastAttackTime() < tower.getFireRate()) {
-            return; // Башня еще перезаряжается
+    private void attackEnemy(Tower tower, Enemy enemy, List<Enemy> enemies) {
+        // Если башня ещё перезаряжается, пропускаем атаку
+        if (tower.getReloadCounter() > 0) {
+            return;
         }
 
         // Наносим урон врагу
         enemy.takeDamage(tower.getDamage());
-        tower.setLastAttackTime(currentTime); // Обновляем время последней атаки
+        tower.setReloadCounter(tower.getFireRate()); // Сбрасываем перезарядку
 
         if (enemy.isDead()) {
+            enemies.remove(enemy);
             System.out.println("Enemy destroyed at position: (" + enemy.getX() + ", " + enemy.getY() + ")");
             tower.setCurrentTarget(null); // Убираем цель, если враг уничтожен
         } else {
