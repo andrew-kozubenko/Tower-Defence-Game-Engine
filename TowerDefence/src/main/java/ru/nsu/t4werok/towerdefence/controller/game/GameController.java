@@ -16,6 +16,7 @@ import ru.nsu.t4werok.towerdefence.model.game.playerState.PlayerState;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameController {
@@ -29,27 +30,36 @@ public class GameController {
     private TowerConfig selectedTower = null;
     private final GameEngine gameEngine;
     private PlayerState playerState;
-
-    public GameMap getGameMap() {
-        return gameMap;
-    }
+    private List<TechTree> techTrees = new ArrayList<>();
 
     public List<TowerConfig> getTowersForSelect() {
         return towersForSelect;
-    }
-
-    public void setTowersForSelect(List<TowerConfig> towersForSelect) {
-        this.towersForSelect = towersForSelect;
     }
 
     public GameController(GameEngine gameEngine, SceneController sceneController, GameMap gameMap, List<Tower> towers) {
         this.gameEngine = gameEngine;
         this.gameMap = gameMap;
         this.towers = towers;
-        this.towerController = new TowerController(gameMap, towers);
         this.sceneController = sceneController;
-        this.techTreeController = new TechTreeController(techTreeConfigs, playerState);
         this.playerState = new PlayerState("Zimbel", 80);
+        this.techTreeController = new TechTreeController(techTreeConfigs, playerState);
+        this.towerController = new TowerController(gameMap, towers);
+    }
+
+    public GameMap getGameMap() {
+        return gameMap;
+    }
+
+    public void setSelectedTower(TowerConfig selectedTower) {
+        this.selectedTower = selectedTower;
+    }
+
+    public List<TechTree> getTechTrees() {
+        return techTrees;
+    }
+
+    public void setTowersForSelect(List<TowerConfig> towersForSelect) {
+        this.towersForSelect = towersForSelect;
     }
 
     public Tower placeTower(int x, int y) {
@@ -91,6 +101,7 @@ public class GameController {
             TechTree techTree = techTreeController.findTechTreeByName(towerName);  // Ищем дерево технологий по имени
             if (techTree != null) {
                 towerConfig.setTechTree(techTree);  // Устанавливаем найденное дерево технологий в башню
+                this.techTrees.add(techTree);
             } else {
                 System.out.println("No tech tree found for tower: " + towerName);
             }
@@ -107,12 +118,35 @@ public class GameController {
     public void buyUpgrade(TechNode node) {
         techTreeController.buyUpgrade(node);
     }
+    public void buyUpgradeForTower(Tower tower, TechNode node) {
+        techTreeController.buyUpgradeForTower(tower, node);
+    }
 
     public boolean isUpgradeAvailable(TechNode node) {
         return techTreeController.isUpgradeAvailable(node);
     }
 
+
     public TowerConfig getSelectedTower() {
         return selectedTower;
     }
+
+    public boolean checkTowerInCell(int x, int y) {
+        for (Tower tower : towers) {
+            if (tower.getX() == x && tower.getY() == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Tower getTowerAtCell(int x, int y) {
+        for (Tower tower : towers) {
+            if (tower.getX() == x && tower.getY() == y) {
+                return tower;
+            }
+        }
+        return null;
+    }
+
 }

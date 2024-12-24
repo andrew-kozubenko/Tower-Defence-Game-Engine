@@ -10,14 +10,17 @@ import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
 import ru.nsu.t4werok.towerdefence.view.game.playerState.tech.TechTreeView;
+
+import java.util.List;
 
 public class TowerView {
 
     private final Canvas canvas;
     private final GraphicsContext gc;
     private final GameController gameController;
-    private final TechTreeView techTreeView = new TechTreeView();
+    private final TechTreeView techTreeView;
     private final GameMap gameMap;
 
     public TowerView(GameController gameController, GraphicsContext gc, Canvas canvas, GameMap gameMap) {
@@ -25,6 +28,7 @@ public class TowerView {
         this.canvas = canvas;
         this.gameController = gameController;
         this.gameMap = gameMap;
+        this.techTreeView = new TechTreeView(this.gameController);
     }
 
     public void viewTowersForSelect(VBox towerListPanel) {
@@ -37,7 +41,7 @@ public class TowerView {
 
             // Кнопка для открытия окна улучшений
             Button upgradesButton = new Button("Upgrades");
-            upgradesButton.setOnAction(e -> techTreeView.showUpgradesWindow(gameController, towerConfig));
+            upgradesButton.setOnAction(e -> techTreeView.showUpgradesWindow(towerConfig));
 
             // Добавляем кнопки в контейнер
             towerBox.getChildren().addAll(towerButton, upgradesButton);
@@ -75,5 +79,9 @@ public class TowerView {
 
         // Отображаем изображение башни на канвасе с заданными координатами и размерами
         gc.drawImage(towerImage, pixelX, pixelY, towerWidth, towerHeight);
+    }
+
+    public void showTowerUpgradeMenu(Tower tower, List<TechTree> techTrees) {
+        techTreeView.showTowerUpgradeMenu(tower, techTrees);
     }
 }
