@@ -155,4 +155,7 @@ public class GameController {
         return null;
     }
 
+    public void endCoins() {
+        playerState.setCoins(0);
+    }
 }
