@@ -1,19 +1,19 @@
 {
   "enemiesConfigs": [
     {
-      "lifePoints": 30,
+      "lifePoints": 1,
       "speed": 2,
       "damageToBase": 10,
       "loot": 20
     },
     {
-      "lifePoints": 45,
+      "lifePoints": 1,
       "speed": 1,
       "damageToBase": 15,
       "loot": 30
     },
     {
-      "lifePoints": 60,
+      "lifePoints": 1,
       "speed": 3,
       "damageToBase": 20,
       "loot": 50

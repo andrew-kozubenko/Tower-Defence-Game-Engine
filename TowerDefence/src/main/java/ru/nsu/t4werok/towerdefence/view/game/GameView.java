@@ -8,6 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.app.GameEngine;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
@@ -22,12 +23,13 @@ public class GameView {
     private final MapView mapView;
     private final TowerView towerView;
     private Stage menuStage;
+    private final Button startButton;
 
 
     private final GraphicsContext gc;
 
 
-    public GameView(GameController gameController) {
+    public GameView(GameController gameController, GameEngine engine) {
         canvas = new Canvas(800, 600);
         gc = canvas.getGraphicsContext2D();
 
@@ -45,6 +47,25 @@ public class GameView {
         // Башни на выбор и прокачки
         gameController.loadTowersForSelect();
         towerView.viewTowersForSelect(towerListPanel);
+
+
+        startButton = new Button("Start");
+        startButton.setOnAction(e -> {
+            // Логика первого нажатия
+            engine.start(); // Запуск игры
+            startButton.setText("NextWave"); // Изменение текста кнопки
+
+            // Изменение действия кнопки на "NextWave"
+            startButton.setOnAction(event -> {
+                if(engine.nextWave()){
+                    deleteButtonNextWave();// Вызов следующей волны
+                }
+                System.out.println("Next wave started!");
+            });
+        });
+
+        // Добавляем кнопку в панель башен
+        towerListPanel.getChildren().add(startButton);
 
         // Создание кнопки для меню
         Button menuButton = new Button("Menu");
@@ -121,6 +142,10 @@ public class GameView {
         menuStage.setScene(menuScene);
         menuStage.setTitle("Game Menu");
         menuStage.show();
+    }
+
+    public void deleteButtonNextWave(){
+        towerListPanel.getChildren().remove(startButton);
     }
 
     public Scene getScene() {

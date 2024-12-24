@@ -64,7 +64,7 @@ public class GameEngine {
         this.sceneController = sceneController;
         this.base = base; // Передаем базу
         this.gameController = new GameController(this, sceneController, gameMap, towers);
-        this.gameView = new GameView(gameController);
+        this.gameView = new GameView(gameController, this);
         // Добавляем игровую сцену в SceneController
         sceneController.addScene("Game", gameView.getScene());
         // Переключаемся на игровую сцену
@@ -87,6 +87,7 @@ public class GameEngine {
     public void start() {
         running = true;
         settingsManager.setRunningGame(true);
+        System.out.println("Start");
 
         // Игровой цикл
         gameLoop = new AnimationTimer() {
@@ -112,6 +113,7 @@ public class GameEngine {
 
     public void stop() {
         running = false;
+        gameView.deleteButtonNextWave();
     }
 
     public void update() {
@@ -160,6 +162,8 @@ public class GameEngine {
         allEnemiesView.renderEnemies(gc, enemies);
     }
 
-
+    public boolean nextWave(){
+        return waveController.nextWave();
+    }
 
 }
