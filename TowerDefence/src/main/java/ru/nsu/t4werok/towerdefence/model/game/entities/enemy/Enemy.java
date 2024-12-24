@@ -1,5 +1,7 @@
 package ru.nsu.t4werok.towerdefence.model.game.entities.enemy;
 
+import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
+
 import java.util.List;
 
 public class Enemy {
@@ -13,14 +15,17 @@ public class Enemy {
     private int currentPathIndex; // Индекс текущей точки на пути
     private int x, y; // Координаты врага
 
+    private int numberOfPath;
+
     // Конструктор
-    public Enemy(int lifePoints, int speed, int defense, int damageToBase, int loot, List<String> animations, int startX, int startY) {
+    public Enemy(int lifePoints, int speed, int defense, int damageToBase, int loot, List<String> animations, int startX, int startY, int numberOfPath) {
         this.lifePoints = lifePoints;
         this.speed = speed;
         this.defense = defense;
         this.damageToBase = damageToBase;
         this.loot = loot;
         this.animations = animations;
+        this.numberOfPath = numberOfPath;
         this.isDead = false;
         this.currentPathIndex = 0;
         this.x = startX;
@@ -39,22 +44,79 @@ public class Enemy {
 
 
     // Логика движения по пути
-    public void move(List<Integer[]> path) {
-        if (currentPathIndex < path.size()) {
-            Integer[] nextPoint = path.get(currentPathIndex);
-            this.x = nextPoint[0];
-            this.y = nextPoint[1];
-            currentPathIndex++;
-        } else {
-            // Достигнута база
-            setDead(true); // Враг считается мертвым, когда достиг базы
+    public void move(GameMap map) {
+        // Вычисляем размеры клетки по осям X и Y
+        int cellSizeX = 800 / map.getWidth();  // Размер клетки по X
+        int cellSizeY = 600 / map.getHeight(); // Размер клетки по Y
+
+        // Получаем путь для врага
+        List<Integer[]> path = map.getEnemyPaths().get(numberOfPath); // Путь в клетках
+
+        while (currentPathIndex < path.size() && speed > 0) {
+            Integer[] nextCell = path.get(currentPathIndex);
+
+            // Вычисляем целевые координаты (центр следующей клетки)
+            int targetX = nextCell[0] * cellSizeX + cellSizeX / 2;
+            int targetY = nextCell[1] * cellSizeY + cellSizeY / 2;
+
+            // Разница между текущими и целевыми координатами
+            int dx = targetX - x;
+            int dy = targetY - y;
+
+            // Проверяем расстояние до текущей цели
+            int distanceX = Math.abs(dx);
+            int distanceY = Math.abs(dy);
+
+            // Если враг может достичь цели за текущий такт
+            if (distanceX <= speed && distanceY <= speed) {
+                // Перемещаемся точно в цель
+                x = targetX;
+                y = targetY;
+
+                // Уменьшаем скорость на пройденное расстояние
+                speed -= Math.max(distanceX, distanceY);
+
+                // Переходим к следующей точке
+                currentPathIndex++;
+            } else {
+                // Движемся в сторону цели ровно на скорость
+                x += Integer.signum(dx) * Math.min(speed, distanceX);
+                y += Integer.signum(dy) * Math.min(speed, distanceY);
+
+                // Обнуляем скорость, так как текущий шаг завершен
+                speed = 0;
+            }
+        }
+
+        // Если путь пройден до конца, враг достигает базы
+        if (currentPathIndex >= path.size()) {
+            setDead(true);
         }
     }
+
+
+
 
     public void takeDamage(int damage) {
         this.lifePoints -= damage;
         if (this.lifePoints <= 0) {
             setDead(true);
         }
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 }
