@@ -177,7 +177,11 @@ public class GameEngine {
         gc.strokeRect(rectX, rectY, rectWidth, rectHeight);
 
         // Отрисовка текста "Деньги"
-        String coinsText = "Money: " + gameController.coinsNow();
+        String coinsText = gameController.coinsNow()
+                + "$ "
+                + base.getHealth()
+                + "HP";
+
         gc.setFill(Color.BLACK);
         gc.setFont(javafx.scene.text.Font.font(16));
         gc.fillText(coinsText, rectX + 10, rectY + 25);
