@@ -3,6 +3,7 @@ package ru.nsu.t4werok.towerdefence.view.game.entities.tower;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -22,7 +23,6 @@ public class TowerView {
     private final GameController gameController;
     private final TechTreeView techTreeView;
     private final GameMap gameMap;
-
     public TowerView(GameController gameController, GraphicsContext gc, Canvas canvas, GameMap gameMap) {
         this.gc = gc;
         this.canvas = canvas;

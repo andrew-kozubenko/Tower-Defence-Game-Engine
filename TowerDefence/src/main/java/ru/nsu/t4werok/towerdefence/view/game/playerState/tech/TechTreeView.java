@@ -2,6 +2,7 @@ package ru.nsu.t4werok.towerdefence.view.game.playerState.tech;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -45,7 +46,7 @@ public class TechTreeView {
     public void showTowerUpgradeMenu(Tower tower, List<TechTree> techTrees) {
         Stage upgradeStage = new Stage();
         VBox menuLayout = new VBox(10);
-        menuLayout.setStyle("-fx-padding: 20;");
+        menuLayout.setStyle("-fx-padding: 5;");
 
         TechTree techTree = null;
         for (TechTree techTreeI : techTrees) {
@@ -59,6 +60,17 @@ public class TechTreeView {
             System.out.println("No tech tree associated with this tower.");
             return;
         }
+
+        // Информация о характеристиках башни
+        Label towerInfoLabel = new Label();
+        towerInfoLabel.setText("Tower Info:\n" +
+                "Level: " + tower.getUpgradeLevel() + "\n" +
+                "Damage: " + tower.getDamage() + "\n" +
+                "Attack Radius: " + tower.getAttackRadius() + "\n" +
+                "Fire Rate: " + tower.getFireRate() + "\n" +
+                "Speed: " + tower.getFireRate());
+
+        menuLayout.getChildren().add(towerInfoLabel); // Добавляем информацию о башне в меню
 
         // Получаем доступные улучшения
         List<TechNode> availableUpgrades = techTree.getAvailableUpgrades(tower);

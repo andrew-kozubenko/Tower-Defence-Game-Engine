@@ -155,7 +155,7 @@ public class GameController {
         return null;
     }
 
-    public void endCoins() {
-        playerState.setCoins(0);
+    public int coinsNow() {
+        return playerState.getCoins();
     }
 }
