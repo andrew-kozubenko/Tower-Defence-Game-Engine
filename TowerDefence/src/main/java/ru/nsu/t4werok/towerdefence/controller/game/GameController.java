@@ -5,8 +5,6 @@ import ru.nsu.t4werok.towerdefence.app.GameEngine;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerSelectionConfig;
 import ru.nsu.t4werok.towerdefence.config.game.playerState.tech.TechTreeConfig;
-import ru.nsu.t4werok.towerdefence.config.game.playerState.tech.TechNodeConfig;
-import ru.nsu.t4werok.towerdefence.config.game.playerState.tech.TechTreeSelectionConfig;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.entities.tower.TowerController;
 import ru.nsu.t4werok.towerdefence.controller.game.playerState.tech.TechTreeController;

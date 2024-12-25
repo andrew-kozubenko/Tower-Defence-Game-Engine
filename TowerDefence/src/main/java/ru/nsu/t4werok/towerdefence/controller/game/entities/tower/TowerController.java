@@ -133,7 +133,9 @@ public class TowerController {
 
     // Проверка, находится ли враг в радиусе атаки башни
     private boolean isEnemyInRange(Tower tower, Enemy enemy) {
-        double distance = Math.sqrt(Math.pow(enemy.getX() - tower.getX(), 2) + Math.pow(enemy.getY() - tower.getY(), 2));
+        int towerX = (int) ( tower.getX() * (800 / gameMap.getWidth()) + 0.5 * (800 / gameMap.getWidth()));
+        int towerY = (int) (tower.getY() * (600 / gameMap.getHeight()) + 0.5 * (600 / gameMap.getHeight()));
+        double distance = Math.sqrt(Math.pow(enemy.getX() - towerX, 2) + Math.pow(enemy.getY() - towerY, 2));
         return distance <= tower.getAttackRadius();
     }
 
@@ -141,13 +143,15 @@ public class TowerController {
 
     // Поиск ближайшего врага для каждой башни
     private Enemy findNearestEnemy(Tower tower, List<Enemy> enemies) {
+        int towerX = (int) ( tower.getX() * (800 / gameMap.getWidth()) + 0.5 * (800 / gameMap.getWidth()));
+        int towerY = (int) (tower.getY() * (600 / gameMap.getHeight()) + 0.5 * (600 / gameMap.getHeight()));
         Enemy nearestEnemy = null;
         double closestDistance = tower.getAttackRadius(); // Максимальное расстояние в радиусе атаки
 
         for (Enemy enemy : enemies) {
-
-            double distance = Math.sqrt(Math.pow(enemy.getX() - tower.getX(), 2) + Math.pow(enemy.getY() - tower.getY(), 2));
-            if (distance <= tower.getAttackRadius() && (nearestEnemy == null || distance > closestDistance)) {
+            System.out.println(tower.getX());
+            double distance = Math.sqrt(Math.pow(enemy.getX() - towerX, 2) + Math.pow(enemy.getY() - towerY, 2));
+            if (distance <= tower.getAttackRadius() && (nearestEnemy == null || distance < closestDistance)) {
                 nearestEnemy = enemy;
                 closestDistance = distance;
             }
