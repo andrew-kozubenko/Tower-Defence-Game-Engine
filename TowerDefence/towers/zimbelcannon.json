@@ -5,7 +5,7 @@
   "damageType": "physical",
   "fireRate": 1.2,
   "visualEffect": "flame",
-  "attackRadius": 6,
+  "attackRadius": 300,
   "image": "image/towers/5.png"
 }
 
