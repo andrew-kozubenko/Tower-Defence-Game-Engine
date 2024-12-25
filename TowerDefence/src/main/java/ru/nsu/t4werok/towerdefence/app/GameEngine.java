@@ -3,6 +3,7 @@ package ru.nsu.t4werok.towerdefence.app;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import ru.nsu.t4werok.towerdefence.config.game.entities.enemy.EnemiesConfig;
 import ru.nsu.t4werok.towerdefence.config.game.entities.enemy.WavesConfig;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
@@ -123,11 +124,13 @@ public class GameEngine {
         }
 
         // Обновление врагов
-        for (Enemy enemy : enemies) {
+        for (int i = 0; i < enemies.size(); i++) {
+            Enemy enemy = enemies.get(i);
             enemy.move(gameMap); // Двигаем врагов по пути
             if (enemy.isDead()) {
                 if (base != null) {
                     base.takeDamage(enemy.getDamageToBase()); // Наносим урон базе, если враг достиг её
+                    enemies.remove(enemy);
                 }
             }
         }
@@ -149,16 +152,37 @@ public class GameEngine {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         gameView.getMapView().renderMap();
-        for (Tower tower : towers){
+
+        for (Tower tower : towers) {
             towerView.renderTower(tower);
             if (tower.getAttackX() != -1) {
                 towerView.renderBullets(tower, 5);
                 tower.setAttackX(-1);
-                tower.setAttackX(-1);
+                tower.setAttackY(-1);
             }
         }
         allEnemiesView.renderEnemies(gc, enemies);
+
+        // Отрисовка белого прямоугольника
+        double rectX = canvas.getWidth() - 150; // Позиция прямоугольника
+        double rectY = 0;
+        double rectWidth = 130;
+        double rectHeight = 40;
+
+        gc.setFill(Color.WHITE);
+        gc.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+        // Отрисовка рамки прямоугольника
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(rectX, rectY, rectWidth, rectHeight);
+
+        // Отрисовка текста "Деньги"
+        String coinsText = "Money: " + gameController.coinsNow();
+        gc.setFill(Color.BLACK);
+        gc.setFont(javafx.scene.text.Font.font(16));
+        gc.fillText(coinsText, rectX + 10, rectY + 25);
     }
+
 
 
 
