@@ -6,7 +6,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * Утилитный класс, который в dev-режиме копирует
- * файлы из TowerDefenceSDExample -> Documents/Games/TowerDefenceSD
+ * файлы из TowerDefenceSDExample -> Documents/Games/TowerDefenceSD,
+ * перезаписывая имеющиеся файлы.
  */
 public class DevFileInitializer {
 
@@ -30,12 +31,14 @@ public class DevFileInitializer {
                 System.out.println("[DEV] Папка TowerDefenceSDExample не найдена: " + DEV_EXAMPLE_PATH);
                 return;
             }
+            // Создаём папку <user_home>/Documents/Games/TowerDefenceSD, если её нет
             Files.createDirectories(DOCS_BASE_PATH);
 
-            // Обходим всё дерево TowerDefenceSDExample
+            // Рекурсивно обходим TowerDefenceSDExample
             Files.walkFileTree(DEV_EXAMPLE_PATH, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    // Создаём директории в целевом месте
                     Path relative = DEV_EXAMPLE_PATH.relativize(dir);
                     Path targetDir = DOCS_BASE_PATH.resolve(relative);
                     Files.createDirectories(targetDir);
@@ -44,16 +47,19 @@ public class DevFileInitializer {
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    // Для каждого файла: строим путь к файлу в папке Documents...
                     Path relative = DEV_EXAMPLE_PATH.relativize(file);
                     Path targetFile = DOCS_BASE_PATH.resolve(relative);
-                    if (Files.notExists(targetFile)) {
-                        Files.createDirectories(targetFile.getParent());
-                        Files.copy(file, targetFile, StandardCopyOption.COPY_ATTRIBUTES);
-                        System.out.println("[DEV] Скопировали: " + file + " -> " + targetFile);
-                    } else {
-                        // Если нужно, можно залогировать пропуск:
-                        // System.out.println("[DEV] Пропуск, файл уже существует: " + targetFile);
-                    }
+
+                    // Создаём промежуточные директории (если вдруг не создались)
+                    Files.createDirectories(targetFile.getParent());
+
+                    // Перезаписываем файл при наличии (REPLACE_EXISTING), сохраняя атрибуты (COPY_ATTRIBUTES)
+                    Files.copy(file, targetFile,
+                            StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.COPY_ATTRIBUTES);
+
+                    System.out.println("[DEV] Скопировали (заменили): " + file + " -> " + targetFile);
                     return FileVisitResult.CONTINUE;
                 }
             });
