@@ -4,32 +4,54 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TowerSelectionConfig {
-    private final String directoryPath = "towers"; // Директория, где хранятся карты
+
+    // Путь к папке вида: <папка_пользователя>/Documents/Games/TowerDefenceSD/towers
+    private final Path towersDirectoryPath;
+
+    public TowerSelectionConfig() {
+        this.towersDirectoryPath = Paths.get(
+                System.getProperty("user.home"),
+                "Documents",
+                "Games",
+                "TowerDefenceSD",
+                "towers"
+        );
+        try {
+            // Создаём директорию (и все недостающие) при отсутствии
+            Files.createDirectories(towersDirectoryPath);
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось создать директорию для башен: " + towersDirectoryPath, e);
+        }
+    }
 
     /**
-     * Метод для загрузки всех карт из конфигурационных файлов
+     * Метод для загрузки всех конфигураций башен из JSON-файлов
      *
-     * @return Список объектов TowerConfig, представляющих параметры карт
+     * @return Список объектов TowerConfig, представляющих параметры башен
      */
     public List<TowerConfig> loadTowers() {
-        File directory = new File(directoryPath);
         List<TowerConfig> towerConfigs = new ArrayList<>();
+        File directory = towersDirectoryPath.toFile();
 
         if (!directory.exists() || !directory.isDirectory()) {
-            System.out.println("Tower directory not found: " + directoryPath);
+            System.out.println("Towers directory not found: " + towersDirectoryPath);
             return towerConfigs;
         }
 
+        // Получаем все .json-файлы из папки
         File[] files = directory.listFiles((dir, name) -> name.endsWith(".json"));
         if (files != null) {
             ObjectMapper mapper = new ObjectMapper();
             for (File file : files) {
                 try {
-                    // Читаем JSON-файл и преобразуем его в объект TowerConfig
+                    // Читаем JSON-файл и преобразуем его в TowerConfig
                     TowerConfig towerConfig = mapper.readValue(file, TowerConfig.class);
                     towerConfigs.add(towerConfig);
                     System.out.println("Loaded tower: " + file.getName());

@@ -3,13 +3,13 @@ package ru.nsu.t4werok.towerdefence.managers.menu;
 
 import javafx.stage.Stage;
 import ru.nsu.t4werok.towerdefence.config.menu.SettingsConfig;
-import ru.nsu.t4werok.towerdefence.config.menu.SettingsSlectionConfig;
+import ru.nsu.t4werok.towerdefence.config.menu.SettingsSelectionConfig;
 
 
 public class SettingsManager {
     private static SettingsManager instance = null;
     private SettingsConfig settingsConfig;
-    private final SettingsSlectionConfig settingsSlectionConfig;
+    private final SettingsSelectionConfig settingsSlectionConfig;
     private boolean isRunningGame = false;
 
     public boolean isRunningGame() {
@@ -24,7 +24,7 @@ public class SettingsManager {
 
     public SettingsManager() {
         this.settingsConfig = new SettingsConfig();
-        this.settingsSlectionConfig = new SettingsSlectionConfig();
+        this.settingsSlectionConfig = new SettingsSelectionConfig();
         loadSettings();
     }
 

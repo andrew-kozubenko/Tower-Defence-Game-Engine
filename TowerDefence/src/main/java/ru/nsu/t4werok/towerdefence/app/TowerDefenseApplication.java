@@ -7,11 +7,16 @@ import ru.nsu.t4werok.towerdefence.controller.menu.MainMenuController;
 import ru.nsu.t4werok.towerdefence.controller.menu.MapSelectionController;
 import ru.nsu.t4werok.towerdefence.controller.menu.ReplaySelectionController;
 import ru.nsu.t4werok.towerdefence.controller.menu.SettingsController;
+import ru.nsu.t4werok.towerdefence.dev.DevFileInitializer;
 import ru.nsu.t4werok.towerdefence.view.menu.MapSelectionView;
 import ru.nsu.t4werok.towerdefence.managers.menu.SettingsManager;
 import ru.nsu.t4werok.towerdefence.view.menu.ReplaySelectionView;
 import ru.nsu.t4werok.towerdefence.view.menu.SettingsView;
 import ru.nsu.t4werok.towerdefence.view.menu.MainMenuView;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 
 public class TowerDefenseApplication extends Application {
@@ -49,6 +54,27 @@ public class TowerDefenseApplication extends Application {
 
 
     public static void main(String[] args) {
-        launch();
+        // 1) Читаем application.properties из ресурсов:
+        boolean devMode = false;
+        try (InputStream is = TowerDefenseApplication.class.getResourceAsStream("/application.properties")) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                String devModeStr = props.getProperty("devMode", "false");
+                devMode = Boolean.parseBoolean(devModeStr);
+            } else {
+                // Файл application.properties не найден, можно вывести предупреждение
+                System.out.println("[WARN] application.properties not found, using devMode=false by default.");
+            }
+        } catch (IOException e) {
+            // Ошибка чтения файла
+            System.err.println("[ERROR] Can't load application.properties: " + e.getMessage());
+        }
+
+        // 2) Перед запуском приложения копируем dev-файлы, если devMode=true
+        DevFileInitializer.copyDevFilesIfNeeded(devMode);
+
+        // 3) Запускаем JavaFX
+        launch(args);
     }
 }
