@@ -23,6 +23,9 @@ import ru.nsu.t4werok.towerdefence.view.game.entities.enemy.AllEnemiesView;
 import ru.nsu.t4werok.towerdefence.view.game.entities.tower.TowerView;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,16 +57,14 @@ public class GameEngine {
     private final WavesConfig wavesConfig;
     private final WaveController waveController;
 
-    public void setRunning(boolean running) {
-        this.running = running;
-    }
-
     private Base base; // База
 
     public GameEngine(GameMap gameMap, SceneController sceneController, Base base) {
         this.gameMap = gameMap;
         this.sceneController = sceneController;
         this.base = base; // Передаем базу
+
+        // Подготавливаем контроллеры
         this.gameController = new GameController(this, sceneController, gameMap, towers);
         this.gameView = new GameView(gameController, this);
         // Добавляем игровую сцену в SceneController
@@ -72,17 +73,40 @@ public class GameEngine {
         sceneController.switchTo("Game");
         allEnemiesView = new AllEnemiesView();
         towerView = new TowerView(gameController, gameView.getGc(), gameView.getCanvas(), gameMap);
+
+        // Формируем путь к стандартной папке: Documents/Games/TowerDefenceSD
+        Path baseConfigPath = Paths.get(System.getProperty("user.home"), "Documents", "Games", "TowerDefenceSD");
+
+        // Убедимся, что папка существует (если нужно также создавать при отсутствии)
         try {
-            enemiesConfig = loadEnemiesConfig("./enemy/enemies.json");
+            if (!Files.exists(baseConfigPath)) {
+                Files.createDirectories(baseConfigPath);
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Не удалось создать директории для конфигураций: " + e.getMessage());
         }
+
+        // Путь к файлам с конфигурациями
+        Path enemiesPath = baseConfigPath.resolve(Paths.get("enemy", "enemies.json"));
+        Path wavesPath = baseConfigPath.resolve(Paths.get("waves", "waves.json"));
+
         try {
-            wavesConfig = loadWavesConfig("./waves/waves.json");
+            enemiesConfig = loadEnemiesConfig(enemiesPath.toString());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Ошибка загрузки enemies.json: " + e.getMessage(), e);
         }
+
+        try {
+            wavesConfig = loadWavesConfig(wavesPath.toString());
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка загрузки waves.json: " + e.getMessage(), e);
+        }
+
         waveController = new WaveController(wavesConfig, enemiesConfig, gameMap.getEnemyPaths().size());
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
     }
 
     public void start() {
@@ -119,8 +143,10 @@ public class GameEngine {
 
     public void update() {
         if (!running) return;
-        
-        if(!waveController.updateWave(enemies, gameMap.getSpawnPoint(), 800/gameMap.getWidth(), 600 / gameMap.getHeight()) && enemies.isEmpty()){
+
+        // Обновляем текущую волну. Если волны кончились и врагов нет - останавливаем игру.
+        if (!waveController.updateWave(enemies, gameMap.getSpawnPoint(),
+                800 / gameMap.getWidth(), 600 / gameMap.getHeight()) && enemies.isEmpty()) {
             stop();
             return;
         }
@@ -162,9 +188,11 @@ public class GameEngine {
                 tower.setAttackY(-1);
             }
         }
+
+        // Отрисовываем врагов
         allEnemiesView.renderEnemies(gc, enemies);
 
-        // Отрисовка белого прямоугольника
+        // Отрисовка прямоугольника с информацией (деньги и здоровье)
         double rectX = canvas.getWidth() - 150; // Позиция прямоугольника
         double rectY = 0;
         double rectWidth = 130;
@@ -173,24 +201,16 @@ public class GameEngine {
         gc.setFill(Color.WHITE);
         gc.fillRect(rectX, rectY, rectWidth, rectHeight);
 
-        // Отрисовка рамки прямоугольника
         gc.setStroke(Color.BLACK);
         gc.strokeRect(rectX, rectY, rectWidth, rectHeight);
 
-        // Отрисовка текста "Деньги"
-        String coinsText = gameController.coinsNow()
-                + "$ "
-                + base.getHealth()
-                + "HP";
-
+        String coinsText = gameController.coinsNow() + "$ " + base.getHealth() + "HP";
         gc.setFill(Color.BLACK);
         gc.setFont(javafx.scene.text.Font.font(16));
         gc.fillText(coinsText, rectX + 10, rectY + 25);
     }
 
-    public boolean nextWave(){
+    public boolean nextWave() {
         return waveController.nextWave();
     }
-
-
 }
