@@ -1,42 +1,66 @@
 package ru.nsu.t4werok.towerdefence.model.game.entities.map;
 
 import javafx.scene.image.Image;
+import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class GameMap {
-    private final Integer width; // Ширина карты
-    private final Integer height; // Высота карты
-    private final List<List<Integer[]>> enemyPaths; // Пути врагов: список списков координат
-    private final List<Integer[]> towerPositions; // Доступные позиции для башен
-    private final Integer[] spawnPoint; // Точка появления врагов
-    private Base base; // База
-    private Image backgroundImage;
+    private final Integer width;     // Ширина карты
+    private final Integer height;    // Высота карты
+    private final List<List<Integer[]>> enemyPaths;   // Пути врагов
+    private final List<Integer[]> towerPositions;     // Доступные позиции для башен
+    private final Integer[] spawnPoint;               // Точка появления врагов
+    private Base base;
+    private Image backgroundImage;                    // Фон карты
 
-    public GameMap(Integer width, Integer height, List<List<Integer[]>> enemyPaths,
-                   List<Integer[]> towerPositions, Integer[] spawnPoint, Base base, String backgroundImagePath) {
+    /**
+     * @param backgroundImagePath относительный путь к файлу (например, "maps/background.jpg"),
+     *                            который будет взят из "<user_home>/Documents/Games/TowerDefenceSD/...".
+     */
+    public GameMap(Integer width,
+                   Integer height,
+                   List<List<Integer[]>> enemyPaths,
+                   List<Integer[]> towerPositions,
+                   Integer[] spawnPoint,
+                   Base base,
+                   String backgroundImagePath) {
         this.width = width;
         this.height = height;
         this.enemyPaths = enemyPaths;
         this.towerPositions = towerPositions;
         this.spawnPoint = spawnPoint;
         this.base = base;
+
+        // Формируем путь в Documents/Games/TowerDefenceSD
+        Path docBasePath = Paths.get(
+                System.getProperty("user.home"),
+                "Documents",
+                "Games",
+                "TowerDefenceSD"
+        );
+        // Дополняем его относительным путём backgroundImagePath
+        Path fullImagePath = docBasePath.resolve(backgroundImagePath);
+
+        // Пытаемся загрузить файл
         try {
-            // Преобразуем путь в URL
-            File file = new File(backgroundImagePath);
+            File file = fullImagePath.toFile();
             if (file.exists()) {
                 this.backgroundImage = new Image(file.toURI().toString());
             } else {
-                System.err.println("Background image file not found: " + backgroundImagePath);
-                this.backgroundImage = null; // Если файл отсутствует, устанавливаем null
+                System.err.println("Background image file not found: " + fullImagePath);
+                this.backgroundImage = null;
             }
         } catch (Exception e) {
             System.err.println("Error loading background image: " + e.getMessage());
             this.backgroundImage = null;
         }
     }
+
+    // --- Геттеры и сеттеры ---
 
     public Integer getWidth() {
         return width;
@@ -74,7 +98,9 @@ public class GameMap {
         this.backgroundImage = backgroundImage;
     }
 
-    // Проверка, находится ли точка в пределах карты
+    /**
+     * Проверка, находится ли точка (x, y) в пределах карты
+     */
     public boolean isWithinBounds(int x, int y) {
         return x >= 0 && x < width && y >= 0 && y < height;
     }
