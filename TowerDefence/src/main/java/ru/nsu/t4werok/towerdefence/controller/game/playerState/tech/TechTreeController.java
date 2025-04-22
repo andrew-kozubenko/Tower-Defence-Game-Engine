@@ -38,20 +38,34 @@ public class TechTreeController {
         for (TechNodeConfig nodeConfig : techTreeConfig.getRoots()) {
             // Преобразуем каждый TechNodeConfig в TechNode и добавляем его в дерево технологий
             TechNode techNode = new TechNode(nodeConfig.getName(), nodeConfig.getDescription(), nodeConfig.getCost());
-            for (TechNodeConfig prerequisiteConfig : nodeConfig.getPrerequisites()) {
-                // Преобразуем зависимости в объекты TechNode
-                TechNode prerequisiteNode = new TechNode(prerequisiteConfig.getName(), prerequisiteConfig.getDescription(), prerequisiteConfig.getCost());
-                techNode.addPrerequisite(prerequisiteNode);
-            }
-            for (TechNodeConfig childConfig : nodeConfig.getChildren()) {
-                // Преобразуем дочерние узлы в объекты TechNode
-                TechNode childNode = new TechNode(childConfig.getName(), childConfig.getDescription(), childConfig.getCost());
-                techNode.addChild(childNode);
-            }
+            searchPrerequisites(nodeConfig, techNode);
+            searchChildren(nodeConfig, techNode);
             techTree.addRoot(techNode);  // Добавляем в корни дерева
         }
         techTree.fillPrerequisites();
         return techTree;
+    }
+
+    private void searchPrerequisites(TechNodeConfig nodeConfig, TechNode techNode) {
+        // Преобразуем дочерние узлы в объекты TechNode
+        for (TechNodeConfig prerequisiteConfig : nodeConfig.getPrerequisites()) {
+            // Преобразуем зависимости в объекты TechNode
+            TechNode prerequisiteNode = new TechNode(prerequisiteConfig.getName(), prerequisiteConfig.getDescription(), prerequisiteConfig.getCost());
+            techNode.addPrerequisite(prerequisiteNode);
+            System.out.println("Prerequisite name" + prerequisiteConfig.getName());
+            searchPrerequisites(prerequisiteConfig, prerequisiteNode);
+        }
+    }
+
+    private void searchChildren(TechNodeConfig nodeConfig, TechNode techNode) {
+        // Преобразуем дочерние узлы в объекты TechNode
+        for (TechNodeConfig childConfig : nodeConfig.getChildren()) {
+            // Преобразуем дочерние узлы в объекты TechNode
+            TechNode childNode = new TechNode(childConfig.getName(), childConfig.getDescription(), childConfig.getCost());
+            techNode.addChild(childNode);
+            System.out.println("ChildConfig name" + childConfig.getName());
+            searchChildren(childConfig, childNode);
+        }
     }
 
     public void loadTechTrees() {

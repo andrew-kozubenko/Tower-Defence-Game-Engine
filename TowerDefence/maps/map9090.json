@@ -1,0 +1,14 @@
+{
+  "mapName" : "MAp2",
+  "width" : 10,
+  "height" : 8,
+  "enemyPaths" : [ [ [ 2, 3 ], [ 3, 3 ], [ 4, 3 ], [ 5, 2 ], [ 6, 2 ] ] ],
+  "towerPositions" : [ [ 3, 1 ], [ 5, 4 ], [ 3, 2 ] ],
+  "spawnPoint" : [ 2, 3 ],
+  "base" : {
+    "x" : 6,
+    "y" : 2,
+    "health" : 100
+  },
+  "backgroundImage" : "C:\\Users\\Zimbel\\Documents\\С Компа\\Рацельское творчество со старого болота\\Полотна\\aetr.jpg"
+}
