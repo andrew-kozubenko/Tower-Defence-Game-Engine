@@ -156,4 +156,25 @@ public class GameController {
     public int coinsNow() {
         return playerState.getCoins();
     }
+
+
+    /**
+     * Выбирает башню по её имени. Если имя не найдено — логирует ошибку.
+     */
+    public void selectTowerByName(String towerName) {
+        if (towersForSelect == null) {
+            System.out.println("Список башен не загружен");
+            return;
+        }
+
+        for (TowerConfig config : towersForSelect) {
+            if (config.getName().equals(towerName)) {
+                selectTower(config);
+                return;
+            }
+        }
+
+        System.out.println("Башня не найдена: " + towerName);
+    }
+
 }

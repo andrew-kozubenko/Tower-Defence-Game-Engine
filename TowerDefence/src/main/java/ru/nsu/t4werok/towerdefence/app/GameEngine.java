@@ -18,6 +18,7 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Wave;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.replay.model.ReplayDataModel;
 import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
 import ru.nsu.t4werok.towerdefence.view.game.GameView;
 import ru.nsu.t4werok.towerdefence.view.game.entities.enemy.AllEnemiesView;
@@ -213,5 +214,14 @@ public class GameEngine {
 
     public boolean nextWave() {
         return waveController.nextWave();
+    }
+
+    public GameController getGameController() {
+        return gameController;
+    }
+
+    public ReplayDataModel getGameMap() {
+        //Todo: сделать работу с ReplayDataModel и реализовать getGameMap
+        return null;
     }
 }
