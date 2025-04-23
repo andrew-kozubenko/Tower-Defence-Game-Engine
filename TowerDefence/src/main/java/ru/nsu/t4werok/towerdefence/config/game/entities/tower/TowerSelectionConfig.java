@@ -1,6 +1,7 @@
 package ru.nsu.t4werok.towerdefence.config.game.entities.tower;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,23 +14,16 @@ import java.util.List;
 public class TowerSelectionConfig {
 
     // Путь к папке вида: <папка_пользователя>/Documents/Games/TowerDefenceSD/towers
-    private final Path towersDirectoryPath;
+    private final Path towersDirectoryPath = ResourceManager.getTowersDir();
 
     public TowerSelectionConfig() {
-        this.towersDirectoryPath = Paths.get(
-                System.getProperty("user.home"),
-                "Documents",
-                "Games",
-                "TowerDefenceSD",
-                "towers"
-        );
         try {
-            // Создаём директорию (и все недостающие) при отсутствии
             Files.createDirectories(towersDirectoryPath);
         } catch (IOException e) {
             throw new RuntimeException("Не удалось создать директорию для башен: " + towersDirectoryPath, e);
         }
     }
+
 
     /**
      * Метод для загрузки всех конфигураций башен из JSON-файлов

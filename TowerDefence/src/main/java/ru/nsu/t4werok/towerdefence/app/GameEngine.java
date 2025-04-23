@@ -18,6 +18,7 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Wave;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
 import ru.nsu.t4werok.towerdefence.view.game.GameView;
 import ru.nsu.t4werok.towerdefence.view.game.entities.enemy.AllEnemiesView;
 import ru.nsu.t4werok.towerdefence.view.game.entities.tower.TowerView;
@@ -87,17 +88,17 @@ public class GameEngine {
         }
 
         // Путь к файлам с конфигурациями
-        Path enemiesPath = baseConfigPath.resolve(Paths.get("enemy", "enemies.json"));
-        Path wavesPath = baseConfigPath.resolve(Paths.get("waves", "waves.json"));
+        Path enemiesPath = ResourceManager.getEnemiesConfigFile();
+        Path wavesPath   = ResourceManager.getWavesConfigFile();
 
         try {
-            enemiesConfig = loadEnemiesConfig(enemiesPath.toString());
+            this.enemiesConfig = loadEnemiesConfig(enemiesPath.toString());
         } catch (IOException e) {
             throw new RuntimeException("Ошибка загрузки enemies.json: " + e.getMessage(), e);
         }
 
         try {
-            wavesConfig = loadWavesConfig(wavesPath.toString());
+            this.wavesConfig = loadWavesConfig(wavesPath.toString());
         } catch (IOException e) {
             throw new RuntimeException("Ошибка загрузки waves.json: " + e.getMessage(), e);
         }

@@ -1,6 +1,7 @@
 package ru.nsu.t4werok.towerdefence.config.menu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,30 +13,17 @@ import java.nio.file.Paths;
  * Класс для чтения/записи JSON-файла с настройками
  */
 public class SettingsSelectionConfig {
-    // Путь к папке вида: <папка_пользователя>/Documents/Games/TowerDefenceSD/settings
-    private final Path settingsDirectoryPath;
-    // Путь к файлу настроек settings.json
-    private final Path settingsFilePath;
-
     private SettingsConfig settingsConfig;
 
+    private final Path settingsDirectoryPath = ResourceManager.getSettingsDir();
+    private final Path settingsFilePath = settingsDirectoryPath.resolve("settings.json");
+
     public SettingsSelectionConfig() {
-        this.settingsDirectoryPath = Paths.get(
-                System.getProperty("user.home"),
-                "Documents",
-                "Games",
-                "TowerDefenceSD",
-                "settings"
-        );
         try {
-            // Создаём директорию (и все недостающие) при отсутствии
             Files.createDirectories(settingsDirectoryPath);
         } catch (IOException e) {
             throw new RuntimeException("Не удалось создать директорию для настроек: " + settingsDirectoryPath, e);
         }
-
-        // Определяем путь к файлу с настройками
-        this.settingsFilePath = settingsDirectoryPath.resolve("settings.json");
     }
 
     /**

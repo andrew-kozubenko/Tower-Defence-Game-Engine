@@ -1,6 +1,7 @@
 package ru.nsu.t4werok.towerdefence.config.game.entities.map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,23 +14,13 @@ import java.util.List;
 public class MapSelectionConfig {
     // Папка, где будут храниться файлы карт.
     // Формируется в директории вида: <папка_пользователя>/Documents/Games/TowerDefenceSD/maps
-    private final Path mapsDirectoryPath;
+    private final Path mapsDirectoryPath = ResourceManager.getMapsDir();
 
-    // В конструкторе проверяем, что нужные директории существуют, иначе создаём
     public MapSelectionConfig() {
-        this.mapsDirectoryPath = Paths.get(
-                System.getProperty("user.home"),
-                "Documents",
-                "Games",
-                "TowerDefenceSD",
-                "maps"
-        );
         try {
             Files.createDirectories(mapsDirectoryPath);
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Не удалось создать директорию для карт: " + mapsDirectoryPath, e
-            );
+            throw new RuntimeException("Не удалось создать директорию для карт: " + mapsDirectoryPath, e);
         }
     }
 
