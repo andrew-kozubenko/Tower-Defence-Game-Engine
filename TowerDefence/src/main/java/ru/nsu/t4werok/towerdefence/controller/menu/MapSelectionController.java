@@ -1,15 +1,11 @@
 package ru.nsu.t4werok.towerdefence.controller.menu;
 
-import javafx.stage.FileChooser;
 import ru.nsu.t4werok.towerdefence.app.GameEngine;
 import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapConfig;
 import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapSelectionConfig;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
-import ru.nsu.t4werok.towerdefence.view.game.GameView;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -51,7 +47,10 @@ public class MapSelectionController {
                     mapConfig.getTowerPositions(),
                     mapConfig.getSpawnPoint(),
                     mapConfig.getBase(),
-                    mapConfig.getBackgroundImage()
+                    mapConfig.getBackgroundImagePath(),
+                    mapConfig.getBaseImagePath(),
+                    mapConfig.getTowerImagePath(),
+                    mapConfig.getSpawnPointImagePath()
             );
 
             // Создание игрового движка с картой

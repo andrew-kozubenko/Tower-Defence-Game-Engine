@@ -15,7 +15,10 @@ public class GameMap {
     private final List<Integer[]> towerPositions;     // Доступные позиции для башен
     private final Integer[] spawnPoint;               // Точка появления врагов
     private Base base;
-    private Image backgroundImage;                    // Фон карты
+    private Image backgroundImage = null;                    // Фон карты
+    private Image baseImage = null;
+    private Image towerImage = null;
+    private Image spawnPointImage = null;
 
     /**
      * @param backgroundImagePath относительный путь к файлу (например, "maps/background.jpg"),
@@ -27,37 +30,20 @@ public class GameMap {
                    List<Integer[]> towerPositions,
                    Integer[] spawnPoint,
                    Base base,
-                   String backgroundImagePath) {
+                   String backgroundImagePath,
+                   String baseImagePath,
+                   String towerImagePath,
+                   String spawnPointImagePath) {
         this.width = width;
         this.height = height;
         this.enemyPaths = enemyPaths;
         this.towerPositions = towerPositions;
         this.spawnPoint = spawnPoint;
         this.base = base;
-
-        // Формируем путь в Documents/Games/TowerDefenceSD
-        Path docBasePath = Paths.get(
-                System.getProperty("user.home"),
-                "Documents",
-                "Games",
-                "TowerDefenceSD"
-        );
-        // Дополняем его относительным путём backgroundImagePath
-        Path fullImagePath = docBasePath.resolve(backgroundImagePath);
-
-        // Пытаемся загрузить файл
-        try {
-            File file = fullImagePath.toFile();
-            if (file.exists()) {
-                this.backgroundImage = new Image(file.toURI().toString());
-            } else {
-                System.err.println("Background image file not found: " + fullImagePath);
-                this.backgroundImage = null;
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading background image: " + e.getMessage());
-            this.backgroundImage = null;
-        }
+        this.backgroundImage = loadImage(backgroundImagePath);
+        this.baseImage = loadImage(baseImagePath);
+        this.towerImage = loadImage(towerImagePath);
+        this.spawnPointImage = loadImage(spawnPointImagePath);
     }
 
     // --- Геттеры и сеттеры ---
@@ -96,6 +82,57 @@ public class GameMap {
 
     public void setBackgroundImage(Image backgroundImage) {
         this.backgroundImage = backgroundImage;
+    }
+
+    public Image getBaseImage() {
+        return baseImage;
+    }
+
+    public void setBaseImage(Image baseImage) {
+        this.baseImage = baseImage;
+    }
+
+    public Image getTowerImage() {
+        return towerImage;
+    }
+
+    public void setTowerImage(Image towerImage) {
+        this.towerImage = towerImage;
+    }
+
+    public Image getSpawnPointImage() {
+        return spawnPointImage;
+    }
+
+    public void setSpawnPointImage(Image spawnPointImage) {
+        this.spawnPointImage = spawnPointImage;
+    }
+
+    private Image loadImage(String path) {
+        // Формируем путь в Documents/Games/TowerDefenceSD
+        Path docBasePath = Paths.get(
+                System.getProperty("user.home"),
+                "Documents",
+                "Games",
+                "TowerDefenceSD"
+        );
+        // Дополняем его относительным путем ImagePath
+        Path fullImagePath = docBasePath.resolve(path);
+
+        Image image = null;
+        // Пытаемся загрузить файл
+        try {
+            File file = fullImagePath.toFile();
+            if (file.exists()) {
+                image = new Image(file.toURI().toString());
+            } else {
+                System.err.println("Background image file not found: " + fullImagePath);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading background image: " + e.getMessage());
+        }
+
+        return image;
     }
 
     /**
