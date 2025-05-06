@@ -30,9 +30,26 @@ public class MapView {
             gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         }
 
-        // Отрисовка сетки
         int cellWidth = (int) (canvas.getWidth() / gameMap.getWidth());
         int cellHeight = (int) (canvas.getHeight() / gameMap.getHeight());
+
+        // Отрисовка сетки
+        renderGrid(gameMap, cellWidth, cellHeight);
+
+        // Отрисовка доступных позиций для башен
+        renderTowerPositions(gameMap, cellWidth, cellHeight);
+
+        // Отрисовка пути врагов
+        renderEnemyPaths(gameMap, cellWidth, cellHeight);
+
+        // Отрисовка базы
+        renderBase(gameMap, cellWidth, cellHeight);
+
+        // Отрисовка точки спавна
+        renderSpawnPoint(gameMap, cellWidth, cellHeight);
+    }
+
+    private void renderGrid(GameMap gameMap, int cellWidth, int cellHeight) {
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(0.5); // Тонкие линии для сетки
         for (int x = 0; x <= gameMap.getWidth(); x++) {
@@ -41,31 +58,52 @@ public class MapView {
         for (int y = 0; y <= gameMap.getHeight(); y++) {
             gc.strokeLine(0, y * cellHeight, canvas.getWidth(), y * cellHeight);
         }
+    }
 
-        // Отрисовка доступных позиций для башен
-        gc.setFill(Color.GREEN);
-        for (Integer[] position : gameMap.getTowerPositions()) {
-            gc.fillRect(position[0] * cellWidth, position[1] * cellHeight, cellWidth, cellHeight);
-        }
+    private void renderTowerPositions(GameMap gameMap, int cellWidth, int cellHeight) {
+        if (gameMap.getTowerPositions() != null) {
+            Image towerImage = gameMap.getTowerImage();
+            for (Integer[] position : gameMap.getTowerPositions()) {
+                gc.drawImage(towerImage,
+                        position[0] * cellWidth, position[1] * cellHeight, cellWidth, cellHeight);
 
-        // Отрисовка пути врагов
-        gc.setStroke(Color.RED);
-        gc.setLineWidth(3);
-        for (List<Integer[]> path : gameMap.getEnemyPaths()) {
-            for (int i = 0; i < path.size() - 1; i++) {
-                Integer[] start = path.get(i);
-                Integer[] end = path.get(i + 1);
-                gc.strokeLine(
-                        start[0] * cellWidth + cellWidth / 2, start[1] * cellHeight + cellHeight / 2,
-                        end[0] * cellWidth + cellWidth / 2, end[1] * cellHeight + cellHeight / 2
-                );
             }
         }
+    }
 
-        // Отрисовка базы
-        gc.setFill(Color.BLUE);
-        int baseX = gameMap.getBase().getX();
-        int baseY = gameMap.getBase().getY();
-        gc.fillRect(baseX * cellWidth, baseY * cellHeight, cellWidth, cellHeight); // Рисуем базу
+    private void renderEnemyPaths(GameMap gameMap, int cellWidth, int cellHeight) {
+        if (gameMap.getEnemyPaths() != null) {
+            gc.setStroke(Color.RED);
+            gc.setLineWidth(3);
+            for (List<Integer[]> path : gameMap.getEnemyPaths()) {
+                for (int i = 0; i < path.size() - 1; i++) {
+                    Integer[] start = path.get(i);
+                    Integer[] end = path.get(i + 1);
+                    gc.strokeLine(
+                            start[0] * cellWidth + cellWidth / 2, start[1] * cellHeight + cellHeight / 2,
+                            end[0] * cellWidth + cellWidth / 2, end[1] * cellHeight + cellHeight / 2
+                    );
+                }
+            }
+        }
+    }
+
+    private void renderBase(GameMap gameMap, int cellWidth, int cellHeight) {
+        if (gameMap.getBase() != null) {
+            int baseX = gameMap.getBase().getX();
+            int baseY = gameMap.getBase().getY();
+            Image baseImage = gameMap.getBaseImage();
+            gc.drawImage(baseImage,
+                    baseX * cellWidth, baseY * cellHeight, cellWidth, cellHeight); // Рисуем базу
+        }
+    }
+
+    private void renderSpawnPoint(GameMap gameMap, int cellWidth, int cellHeight) {
+        if (gameMap.getSpawnPoint() != null) {
+            Integer[] spawn = gameMap.getSpawnPoint();
+            Image spawnPoinImage = gameMap.getSpawnPointImage();
+            gc.drawImage(spawnPoinImage,
+                    spawn[0] * cellWidth, spawn[1] * cellHeight, cellWidth, cellHeight);// Рисуем точку спавна
+        }
     }
 }

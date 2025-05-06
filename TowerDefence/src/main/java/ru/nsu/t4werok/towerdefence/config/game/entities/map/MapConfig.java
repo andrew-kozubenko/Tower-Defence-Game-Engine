@@ -1,10 +1,7 @@
 package ru.nsu.t4werok.towerdefence.config.game.entities.map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 public class MapConfig {
@@ -15,7 +12,10 @@ public class MapConfig {
     private List<Integer[]> towerPositions; // Доступные позиции для башен
     private Integer[] spawnPoint; // Точка появления врагов
     private Base base; // База
-    private String backgroundImage;
+    private String backgroundImagePath;
+    private String baseImagePath;
+    private String towerImagePath;
+    private String spawnPointImagePath;
 
     public String getMapName() {
         return mapName;
@@ -73,11 +73,35 @@ public class MapConfig {
         this.base = base;
     }
 
-    public String getBackgroundImage() {
-        return backgroundImage;
+    public String getBackgroundImagePath() {
+        return backgroundImagePath;
     }
 
-    public void setBackgroundImage(String backgroundImage) {
-        this.backgroundImage = backgroundImage;
+    public void setBackgroundImagePath (String backgroundImage) {
+        this.backgroundImagePath = backgroundImage;
+    }
+
+    public String getBaseImagePath() {
+        return baseImagePath;
+    }
+
+    public void setBaseImagePath(String baseImagePath) {
+        this.baseImagePath = baseImagePath;
+    }
+
+    public String getTowerImagePath() {
+        return towerImagePath;
+    }
+
+    public void setTowerImagePath(String towerImagePath) {
+        this.towerImagePath = towerImagePath;
+    }
+
+    public String getSpawnPointImagePath() {
+        return spawnPointImagePath;
+    }
+
+    public void setSpawnPointImagePath(String spawnPointImagePath) {
+        this.spawnPointImagePath = spawnPointImagePath;
     }
 }
