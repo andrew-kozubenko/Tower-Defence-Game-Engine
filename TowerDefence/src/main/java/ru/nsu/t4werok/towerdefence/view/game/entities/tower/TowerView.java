@@ -2,9 +2,12 @@ package ru.nsu.t4werok.towerdefence.view.game.entities.tower;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
@@ -32,23 +35,24 @@ public class TowerView {
     }
 
     public void viewTowersForSelect(VBox towerListPanel) {
+        Accordion accordion = new Accordion();
+
         for (TowerConfig towerConfig : gameController.getTowersForSelect()) {
-            VBox towerBox = new VBox(5); // Контейнер для кнопок башни и её апгрейдов
+            VBox content = new VBox(5);
 
-            // Кнопка для выбора башни
-            Button towerButton = new Button(towerConfig.getName());
-            towerButton.setOnAction(e -> gameController.selectTower(towerConfig));
+            Button selectButton = new Button("Select");
+            selectButton.setOnAction(e -> gameController.selectTower(towerConfig));
 
-            // Кнопка для открытия окна улучшений
             Button upgradesButton = new Button("Upgrades");
             upgradesButton.setOnAction(e -> techTreeView.showUpgradesWindow(towerConfig));
 
-            // Добавляем кнопки в контейнер
-            towerBox.getChildren().addAll(towerButton, upgradesButton);
+            content.getChildren().addAll(selectButton, upgradesButton);
 
-            // Добавляем контейнер в панель
-            towerListPanel.getChildren().add(towerBox);
+            TitledPane pane = new TitledPane(towerConfig.getName(), content);
+            accordion.getPanes().add(pane);
         }
+
+        towerListPanel.getChildren().add(accordion);
     }
 
     public void renderTower(Tower tower) {

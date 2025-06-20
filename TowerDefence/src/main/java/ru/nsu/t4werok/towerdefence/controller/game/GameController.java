@@ -119,11 +119,11 @@ public class GameController {
     public void stop() {
     }
 
-    public void buyUpgrade(TechNode node) {
-        techTreeController.buyUpgrade(node);
+    public boolean buyUpgrade(TechNode node) {
+        return techTreeController.buyUpgrade(node);
     }
-    public void buyUpgradeForTower(Tower tower, TechNode node) {
-        techTreeController.buyUpgradeForTower(tower, node);
+    public boolean buyUpgradeForTower(Tower tower, TechNode node) {
+        return techTreeController.buyUpgradeForTower(tower, node);
     }
 
     public boolean isUpgradeAvailable(TechNode node) {

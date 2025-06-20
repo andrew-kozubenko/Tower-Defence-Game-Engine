@@ -11,6 +11,8 @@ public class SettingsManager {
     private SettingsConfig settingsConfig;
     private final SettingsSelectionConfig settingsSlectionConfig;
     private boolean isRunningGame = false;
+    private double width = 800;
+    private double height = 600;
 
     public boolean isRunningGame() {
         return isRunningGame;
@@ -33,6 +35,22 @@ public class SettingsManager {
             instance = new SettingsManager();
         }
         return instance;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public void setHeight(double height) {
+        this.height = height;
     }
 
     public int getVolume() {
@@ -60,6 +78,10 @@ public class SettingsManager {
         String resolution = settingsConfig.getResolution();
         if (mainStage != null && resolution.matches("\\d+x\\d+")) {
             String[] dimensions = resolution.split("x");
+
+//            this.width = Double.parseDouble(dimensions[0]);
+//            this.height = Double.parseDouble(dimensions[1]);
+
             double width = Double.parseDouble(dimensions[0]);
             double height = Double.parseDouble(dimensions[1]);
 
