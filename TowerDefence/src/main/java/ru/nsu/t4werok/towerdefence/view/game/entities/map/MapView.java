@@ -13,6 +13,7 @@ public class MapView {
     private final Canvas canvas;
     private final GraphicsContext gc;
 
+
     public MapView(GraphicsContext gc, Canvas canvas, GameMap gameMap) {
         this.gc = gc;
         this.canvas = canvas;
@@ -68,4 +69,24 @@ public class MapView {
         int baseY = gameMap.getBase().getY();
         gc.fillRect(baseX * cellWidth, baseY * cellHeight, cellWidth, cellHeight); // Рисуем базу
     }
+
+    public void renderHUD(int coins, int health) {
+        // Отрисовка прямоугольника с информацией (деньги и здоровье)
+        double rectX = canvas.getWidth() - 150; // Позиция прямоугольника
+        double rectY = 0;
+        double rectWidth = 130;
+        double rectHeight = 40;
+
+        gc.setFill(Color.WHITE);
+        gc.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(rectX, rectY, rectWidth, rectHeight);
+
+        String coinsText = coins + "$ " + health + "HP";
+        gc.setFill(Color.BLACK);
+        gc.setFont(javafx.scene.text.Font.font(16));
+        gc.fillText(coinsText, rectX + 10, rectY + 25);
+    }
+
 }
