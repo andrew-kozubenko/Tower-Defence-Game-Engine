@@ -91,6 +91,9 @@ public class GameView {
 
         // Рисуем карту
         mapView.renderMap();
+        mapView.renderHUD(gameController.coinsNow(), gameController.getGameMap().getBase().getHealth());
+
+
 
         // Обработчик клика по канвасу (для добавления башни)
         canvas.setOnMouseClicked(e -> {
@@ -108,6 +111,8 @@ public class GameView {
                 Tower tower = gameController.placeTower(towerXCell, towerYCell);
                 if (tower != null) {
                     towerView.renderTower(tower);
+                    mapView.renderHUD(gameController.coinsNow(), gameController.getGameMap().getBase().getHealth());
+
                 }
             } else if (gameController.checkTowerInCell(towerXCell, towerYCell)) {
                 Tower tower = gameController.getTowerAtCell(towerXCell, towerYCell);

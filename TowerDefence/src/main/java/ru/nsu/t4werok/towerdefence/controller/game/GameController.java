@@ -62,9 +62,26 @@ public class GameController {
     }
 
     public Tower placeTower(int x, int y) {
-        Tower tower = towerController.addTower(selectedTower, x, y);
-        selectedTower = null;
-        return tower;
+        if (selectedTower == null) {
+            return null; // Нет выбранной башни
+        }
+
+        int cost = selectedTower.getPrice();
+        if (coinsNow() >= cost) {
+            // Списываем деньги за башню
+            playerState.spendCoins(cost);
+
+            // Добавляем башню через контроллер
+            Tower tower = towerController.addTower(selectedTower, x, y);
+
+            // Сбрасываем выбранную башню
+            selectedTower = null;
+
+            return tower;
+        } else {
+            // Денег недостаточно, башня не ставится
+            return null;
+        }
     }
 
     public void selectTower(TowerConfig towerConfig) {
