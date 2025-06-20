@@ -73,18 +73,18 @@ public class TechTreeController {
         this.techTreeConfigs = techTreeSelectionConfig.loadTechTrees();
     }
 
-    public void buyUpgrade(TechNode node) {
+    public boolean buyUpgrade(TechNode node) {
         // Проверяем доступность улучшения
         if (!isUpgradeAvailable(node)) {
             System.out.println("Upgrade " + node.getName() + " is not available!");
-            return;
+            return false;
         }
 
         // Проверяем, хватает ли у игрока ресурсов на покупку улучшения
         int currentResources = playerState.getCoins(); // Получаем текущие ресурсы игрока
         if (currentResources < node.getCost()) {
             System.out.println("Not enough resources to buy " + node.getName());
-            return;
+            return false;
         }
 
         // Совершаем покупку улучшения
@@ -92,14 +92,15 @@ public class TechTreeController {
         node.setUnlocked(true); // Устанавливаем флаг, что улучшение разблокировано
 
         System.out.println("Upgrade " + node.getName() + " purchased successfully!");
+        return true;
     }
 
-    public void buyUpgradeForTower(Tower tower, TechNode node) {
+    public boolean buyUpgradeForTower(Tower tower, TechNode node) {
         // Проверяем, хватает ли у игрока ресурсов на покупку улучшения
         int currentResources = playerState.getCoins(); // Получаем текущие ресурсы игрока
         if (currentResources < node.getCost()) {
             System.out.println("Not enough resources to buy " + node.getName());
-            return;
+            return false;
         }
         // Совершаем покупку улучшения
         playerState.setCoins(currentResources - node.getCost()); // Вычитаем стоимость из ресурсов
@@ -107,6 +108,8 @@ public class TechTreeController {
         tower.addUpgrade(node.getName());
 
         System.out.println("Upgrade " + node.getName() + " purchased successfully!");
+
+        return true;
     }
 
     public boolean isUpgradeAvailable(TechNode node) {

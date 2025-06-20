@@ -41,7 +41,7 @@ public class GameView {
         // Панель для башен справа
         towerListPanel = new VBox(10);
         towerListPanel.setStyle("-fx-background-color: #D3D3D3; -fx-padding: 10;");
-        towerListPanel.setPrefWidth(150);
+        towerListPanel.setPrefWidth(300);
         towerListPanel.setPrefHeight(600);
 
         // Башни на выбор и прокачки
