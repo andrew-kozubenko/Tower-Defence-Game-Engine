@@ -10,8 +10,8 @@
     "y" : 7,
     "health" : 100
   },
-  "backgroundImagePath" : "C:\\GITs\\Tower-Defence-Game-Engine\\TowerDefence\\TowerDefenceSDExample\\image\\maps\\background\\Map1.png",
-  "baseImagePath" : "C:\\GITs\\Tower-Defence-Game-Engine\\TowerDefence\\TowerDefenceSDExample\\image\\maps\\base\\Base1.png",
-  "towerImagePath" : "C:\\GITs\\Tower-Defence-Game-Engine\\TowerDefence\\TowerDefenceSDExample\\image\\maps\\towerPositions\\TowerPos.png",
-  "spawnPointImagePath" : "C:\\GITs\\Tower-Defence-Game-Engine\\TowerDefence\\TowerDefenceSDExample\\image\\maps\\spawnPoint\\Spawn1.png"
+  "backgroundImagePath" : "image/maps/background/Map1.png",
+  "baseImagePath" : "image/maps/base/Base1.png",
+  "towerImagePath" : "image/maps/towerPositions/TowerPos.png",
+  "spawnPointImagePath" : "image/maps/spawnPoint/Spawn1.png"
 }
