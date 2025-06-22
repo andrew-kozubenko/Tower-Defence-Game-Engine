@@ -42,7 +42,7 @@ public class LobbyController {
         sceneController.switchTo("MainMenu");
         sceneController.removeScene("Lobby");
     }
-    
+
     public void onGameStartSignal(String mapFromHost) {
         if (mapPath == null && mapFromHost != null) mapPath = mapFromHost;
         sceneController.startMultiplayerGame(client, isHost, mapPath);
