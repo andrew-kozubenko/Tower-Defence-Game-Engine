@@ -8,55 +8,54 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 
 import java.util.List;
 
-
-
+/**
+ * Контроллер экрана выбора карты.
+ * <p>– Single-player: при выборе карты создаётся {@link GameEngine}.<br>
+ * – Multiplayer: никак не задействован — ведущий открывает отдельное
+ * меню “Multiplayer” прямо из главного меню, логика которого уже работает.</p>
+ */
 public class MapSelectionController {
-    private final SceneController sceneController;
-    private final MapSelectionConfig mapSelectionConfig;
 
-    // Конструктор с передачей сцены
+    private final SceneController   sceneController;
+    private final MapSelectionConfig mapSelectionConfig = new MapSelectionConfig();
+
     public MapSelectionController(SceneController sceneController) {
         this.sceneController = sceneController;
-        this.mapSelectionConfig = new MapSelectionConfig();
     }
 
-    /**
-     * Метод для загрузки всех доступных карт
-     */
+    /* ---------- данные для View ---------- */
+
     public List<MapConfig> getAvailableMaps() {
         return mapSelectionConfig.loadMaps();
     }
 
-    // Метод для обработки нажатия кнопки "Back to Main Menu"
+    /* ---------- навигация ---------- */
+
     public void onBackButtonPressed() {
         sceneController.switchTo("MainMenu");
     }
 
-    /**
-     * Метод для обработки выбора карты.
-     *
-     * @param mapConfig Конфигурация выбранной карты.
-     */
-    public void onMapSelected(MapConfig mapConfig) {
-        if (mapConfig != null) {
-            // Создание игрового объекта GameMap на основе MapConfig
-            GameMap gameMap = new GameMap(
-                    mapConfig.getWidth(),
-                    mapConfig.getHeight(),
-                    mapConfig.getEnemyPaths(),
-                    mapConfig.getTowerPositions(),
-                    mapConfig.getSpawnPoint(),
-                    mapConfig.getBase(),
-                    mapConfig.getBackgroundImagePath(),
-                    mapConfig.getBaseImagePath(),
-                    mapConfig.getTowerImagePath(),
-                    mapConfig.getSpawnPointImagePath()
-            );
+    /* ---------- выбор карты (single-player) ---------- */
 
-            // Создание игрового движка с картой
-            GameEngine gameEngine = new GameEngine(gameMap, sceneController, gameMap.getBase());
-        } else {
-            System.out.println("No map selected or map configuration is invalid.");
+    public void onMapSelected(MapConfig map) {
+        if (map == null) {
+            System.out.println("No map selected or configuration invalid."); // лог для дебага
+            return;
         }
+
+        GameMap gameMap = new GameMap(
+                map.getWidth(),
+                map.getHeight(),
+                map.getEnemyPaths(),
+                map.getTowerPositions(),
+                map.getSpawnPoint(),
+                map.getBase(),
+                map.getBackgroundImagePath(),
+                map.getBaseImagePath(),
+                map.getTowerImagePath(),
+                map.getSpawnPointImagePath()
+        );
+
+        new GameEngine(gameMap, sceneController, gameMap.getBase());
     }
 }

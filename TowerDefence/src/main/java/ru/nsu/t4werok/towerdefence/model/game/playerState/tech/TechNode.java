@@ -1,65 +1,60 @@
 package ru.nsu.t4werok.towerdefence.model.game.playerState.tech;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class TechNode {
-    private final String name; // Название технологии
-    private final String description; // Описание технологии
-    private final Integer cost; // Стоимость изучения технологии
-    private final List<TechNode> prerequisites; // Необходимые технологии для разблокировки
-    private final List<TechNode> children; // Дочерние узлы (связанные технологии)
+/** Узел дерева технологий. */
+public class TechNode implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    /* -------- конфигурация -------- */
+    private final String name;
+    private final String description;
+    private final int    cost;
+
+    /* -------- состояние -------- */
     private boolean unlocked = false;
 
-    public TechNode(String name, String description, int cost) {
-        this.name = name;
-        this.description = description;
-        this.cost = cost;
-        this.prerequisites = new ArrayList<>();
-        this.children = new ArrayList<>();
+    /* -------- связи -------- */
+    private TechNode parent;                     // новый «простой» родитель
+    private final List<TechNode> prerequisites = new ArrayList<>();
+    private final List<TechNode> children      = new ArrayList<>();
+
+    public TechNode(String name, String descr, int cost) {
+        this.name = name; this.description = descr; this.cost = cost;
     }
 
-    // Добавить зависимость (предыдущую технологию)
-    public void addPrerequisite(TechNode prerequisite) {
-        this.prerequisites.add(prerequisite);
-    }
+    /* -------- API, нужное контроллерам/ UI -------- */
+    public String getName()        { return name; }
+    public String getDescription() { return description; }
+    public int    getCost()        { return cost; }
 
-    // Добавить дочернюю технологию
-    public void addChild(TechNode child) {
-        this.children.add(child);
-        child.addPrerequisite(this);
-    }
+    public boolean isUnlocked()             { return unlocked; }
+    public void    unlock()                 { unlocked = true; }
+    public void    setUnlocked(boolean val) { unlocked = val; }
 
-    // Получить имя технологии
-    public String getName() {
-        return name;
-    }
+    public List<TechNode> getPrerequisites(){ return Collections.unmodifiableList(prerequisites); }
+    public void addPrerequisite(TechNode n) { prerequisites.add(n); }
 
-    // Получить описание технологии
-    public String getDescription() {
-        return description;
+    public List<TechNode> getChildren()     { return Collections.unmodifiableList(children); }
+    public void addChild(TechNode n)        {
+        n.parent = this;                    // фиксируем родителя
+        children.add(n);
     }
+    public TechNode getParent()             { return parent; }
 
-    // Получить стоимость технологии
-    public Integer getCost() {
-        return cost;
-    }
-
-    // Получить список зависимостей
-    public List<TechNode> getPrerequisites() {
-        return prerequisites;
-    }
-
-    // Получить дочерние технологии
-    public List<TechNode> getChildren() {
-        return children;
-    }
-
-    public boolean isUnlocked() {
-        return unlocked;
-    }
-
-    public void setUnlocked(boolean unlocked) {
-        this.unlocked = unlocked;
+    /* -------- deep copy -------- */
+    TechNode deepCopy() {
+        TechNode c = new TechNode(name, description, cost);
+        c.unlocked = unlocked;
+        for (TechNode p : prerequisites) c.prerequisites.add(p.deepCopy());
+        for (TechNode ch : children) {
+            TechNode chCopy = ch.deepCopy();
+            chCopy.parent = c;
+            c.children.add(chCopy);
+        }
+        return c;
     }
 }

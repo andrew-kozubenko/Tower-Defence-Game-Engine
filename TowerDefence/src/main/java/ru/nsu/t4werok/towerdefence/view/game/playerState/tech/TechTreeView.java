@@ -1,14 +1,9 @@
 package ru.nsu.t4werok.towerdefence.view.game.playerState.tech;
 
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Popup;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
@@ -17,128 +12,138 @@ import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * UI-слой для работы с технологиями.
+ * • «Unlock upgrades» — иерархия анлока в один клик.<br>
+ * • «Apply to …»    — применяем апгрейд и видим список уже установленных.
+ */
 public class TechTreeView {
-    private final GameController gameController;
 
-    public TechTreeView(GameController gameController) {
-        this.gameController = gameController;
+    private final GameController gc;
+    public  TechTreeView(GameController gc) { this.gc = gc; }
+
+    /* ===================================================================== */
+    /* ========================  ГЛОБАЛЬНЫЙ UNLOCK  ======================== */
+    public void showUpgradesWindow(TowerConfig cfg) {
+        Popup pop = new Popup();
+        VBox  box = layout("Unlock upgrades – " + cfg.getName());
+
+        TechTree tree = cfg.getTechTree();
+        if (tree == null) box.getChildren().add(new Label("No tech tree"));
+        else for (TechNode root : tree.getRoots())
+            addNodeUnlock(root, box, 0);
+
+        pop.getContent().add(box);
+        pop.setAutoHide(true);
+        pop.show(primary());
     }
 
-    public void showUpgradesWindow(TowerConfig towerConfig) {
-        Popup popup = new Popup();
-        VBox upgradesLayout = new VBox(10);
-        upgradesLayout.setStyle("-fx-padding: 10; -fx-background-color: #F5F5F5; -fx-border-color: #333333; -fx-border-width: 1;");
-        upgradesLayout.setPrefWidth(400);
-        upgradesLayout.setPrefHeight(600);
+    /* ===================================================================== */
+    /* =======================  APPLY К КОНКРЕТНОЙ БАШНЕ  ================== */
+    public void showTowerUpgradeMenu(Tower tower, List<TechTree> trees) {
+        Popup pop = new Popup();
+        VBox  box = layout("Apply to " + tower.getName());
 
-        upgradesLayout.getChildren().add(new Label("Upgrades for " + towerConfig.getName()));
+        /* ——— инфо по башне + уже применённые апгрейды ——— */
+        box.getChildren().add(towerInfo(tower));
+        box.getChildren().add(upgradesInfo(tower));
 
-        // Получаем дерево технологий
-        TechTree techTree = towerConfig.getTechTree();
-        if (techTree != null) {
-            for (TechNode techNode : techTree.getRoots()) {
-                addTechNodeToView(techNode, upgradesLayout, popup);
+        /* ——— доступные для применения ——— */
+        TechTree tree = trees.stream()
+                .filter(t -> t.getTowerName().equals(tower.getName()))
+                .findFirst().orElse(null);
+
+        if (tree == null) box.getChildren().add(new Label("No tech tree"));
+        else {
+            List<TechNode> avail = tree.getAvailableUpgrades(tower);
+            if (avail.isEmpty()) box.getChildren().add(new Label("Nothing to apply"));
+            else for (TechNode n : avail) {
+                Button b = new Button(n.getName() + " (" + n.getCost() + " coins)");
+                b.setDisable(gc.coinsNow() < n.getCost());
+                b.setOnAction(e -> {
+                    if (gc.buyUpgradeForTower(tower, n)) {
+                        pop.hide();                               // перерисовать окно
+                        showTowerUpgradeMenu(tower, trees);
+                    } else warn("Cannot apply", "Not enough coins.");
+                });
+                box.getChildren().add(b);
             }
-        } else {
-            upgradesLayout.getChildren().add(new Label("No upgrades available"));
         }
-
-        popup.getContent().add(upgradesLayout);
-        popup.setAutoHide(true); // Закрытие при клике вне окна
-        popup.show(getPrimaryWindow());
+        pop.getContent().add(box);
+        pop.setAutoHide(true);
+        pop.show(primary());
     }
 
-    private Window getPrimaryWindow() {
-        return javafx.stage.Window.getWindows().stream()
+    /* ===================================================================== */
+    /* ============================  HELPERS  ============================== */
+    private VBox layout(String header) {
+        VBox v = new VBox(10);
+        v.setStyle("-fx-padding:10; -fx-background-color:#F5F5F5; -fx-border-color:#333; -fx-border-width:1;");
+        v.getChildren().add(new Label(header));
+        return v;
+    }
+    private Window primary() {
+        return Window.getWindows().stream()
                 .filter(Window::isShowing)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No active window found"));
+                .orElseThrow(() -> new IllegalStateException("No active window"));
     }
-
-    public void showTowerUpgradeMenu(Tower tower, List<TechTree> techTrees) {
-        Popup popup = new Popup();
-        VBox menuLayout = new VBox(10);
-        menuLayout.setStyle("-fx-padding: 10; -fx-background-color: #F0F0F0; -fx-border-color: #CCCCCC;");
-
-        TechTree techTree = null;
-        for (TechTree techTreeI : techTrees) {
-            if (techTreeI.getName().equals(tower.getName())) {
-                techTree = techTreeI;
-                break;
-            }
-        }
-
-        if (techTree == null) {
-            System.out.println("No tech tree associated with this tower.");
-            return;
-        }
-
-        Label towerInfoLabel = new Label(
-                "Tower Info:\n" +
-                        "Level: " + tower.getUpgradeLevel() + "\n" +
-                        "Damage: " + tower.getDamage() + "\n" +
-                        "Attack Radius: " + tower.getAttackRadius() + "\n" +
-                        "Fire Rate: " + tower.getFireRate()
+    private Label towerInfo(Tower t) {
+        return new Label(
+                "Level: "   + t.getUpgradeLevel() + "\n" +
+                        "Damage: "  + t.getDamage()       + "\n" +
+                        "Radius: "  + t.getAttackRadius() + "\n" +
+                        "Fire rate: "+ t.getFireRate()
         );
-
-        menuLayout.getChildren().add(towerInfoLabel);
-
-        List<TechNode> availableUpgrades = techTree.getAvailableUpgrades(tower);
-        for (TechNode node : availableUpgrades) {
-            Button upgradeButton = new Button(node.getName() + " (" + node.getCost() + " coins)");
-            upgradeButton.setOnAction(e -> {
-                boolean success = gameController.buyUpgradeForTower(tower, node);
-                if (success) {
-                    popup.hide();
-                } else {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Upgrade Failed");
-                    alert.setHeaderText("Cannot purchase upgrade");
-                    alert.setContentText("You don't have enough coins.");
-                    alert.showAndWait();
-                }
-            });
-            menuLayout.getChildren().add(upgradeButton);
-        }
-
-        popup.getContent().add(menuLayout);
-        popup.setAutoHide(true);
-        popup.show(getPrimaryWindow());
+    }
+    /** Список уже применённых апгрейдов (виден сразу). */
+    private Label upgradesInfo(Tower t) {
+        String list = t.getUpgrades().isEmpty()
+                ? "—"
+                : t.getUpgrades().stream().collect(Collectors.joining(", "));
+        return new Label("Applied upgrades: " + list);
     }
 
+    /* ===================================================================== */
+    /* ======================  РЕКУРСИВНЫЙ ВЫВОД UNLOCK  ==================== */
+    private void addNodeUnlock(TechNode n, VBox parent, int depth) {
+        HBox line = new HBox(8);
+        line.setPadding(new Insets(0, 0, 0, depth * 20));
+        line.setStyle("-fx-padding:5; -fx-background-color:#E8E8E8; -fx-border-color:#CCC;");
 
-    // Рекурсивно добавляет узлы дерева технологий в интерфейс
-    private void addTechNodeToView(TechNode node, VBox parentLayout, Popup popup) {
-        HBox nodeBox = new HBox(10);
-        nodeBox.setStyle("-fx-padding: 5; -fx-background-color: #E8E8E8; -fx-border-color: #CCCCCC;");
-        nodeBox.setPrefHeight(40);
+        Button info = new Button(n.getName() + " (" + n.getCost() + " coins)");
+        Button buy  = new Button(n.isUnlocked() ? "Unlocked" : "Unlock");
 
-        String description = String.format("%s (Cost: %d)", node.getName(), node.getCost());
-        Button techButton = new Button(description);
+        buy.setDisable(n.isUnlocked() ||
+                !gc.isUpgradeAvailable(n) ||
+                gc.coinsNow() < n.getCost());
 
-        Button buyButton = new Button("Buy");
-        buyButton.setOnAction(e -> {
-            boolean success = gameController.buyUpgrade(node);
-            if (success) {
-                popup.hide(); // Закрыть при успешной покупке
-            } else {
-                // Показать предупреждение пользователю
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Upgrade Failed");
-                alert.setHeaderText("Cannot purchase upgrade");
-                alert.setContentText("You don't have enough coins.");
-                alert.showAndWait();
+        buy.setOnAction(e -> {
+            if (!gc.buyUpgrade(n)) {
+                warn("Cannot unlock", "Not enough coins or prerequisites.");
+                return;
             }
+            buy.setText("Unlocked");
+            buy.setDisable(true);
+            for (TechNode child : n.getChildren())
+                addNodeUnlock(child, parent, depth + 1);
         });
 
-        buyButton.setDisable(!gameController.isUpgradeAvailable(node));
+        line.getChildren().addAll(info, buy);
+        parent.getChildren().add(line);
 
-        nodeBox.getChildren().addAll(techButton, buyButton);
-        parentLayout.getChildren().add(nodeBox);
+        if (n.isUnlocked())
+            for (TechNode child : n.getChildren())
+                addNodeUnlock(child, parent, depth + 1);
+    }
 
-        for (TechNode child : node.getChildren()) {
-            addTechNodeToView(child, parentLayout, popup);
-        }
+    private void warn(String h, String m) {
+        Alert a = new Alert(Alert.AlertType.WARNING);
+        a.setTitle("Upgrade");
+        a.setHeaderText(h);
+        a.setContentText(m);
+        a.showAndWait();
     }
 }

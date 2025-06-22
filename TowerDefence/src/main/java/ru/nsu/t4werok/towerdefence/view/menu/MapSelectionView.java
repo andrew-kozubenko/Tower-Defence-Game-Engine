@@ -1,4 +1,3 @@
-
 package ru.nsu.t4werok.towerdefence.view.menu;
 
 import javafx.geometry.Pos;

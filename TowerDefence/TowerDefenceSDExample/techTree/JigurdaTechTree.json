@@ -19,6 +19,13 @@
               "cost": 200,
               "prerequisites": [],
               "children": []
+            },
+            {
+              "name": "ImproveFireRate22",
+              "description": "Unlocks a new type of tower.",
+              "cost": 200,
+              "prerequisites": [],
+              "children": []
             }
           ]
         }
