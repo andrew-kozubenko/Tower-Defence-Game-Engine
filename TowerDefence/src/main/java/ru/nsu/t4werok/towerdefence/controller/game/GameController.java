@@ -14,9 +14,11 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.PlayerState;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
+import ru.nsu.t4werok.towerdefence.net.NetworkSession;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class GameController {
     private final TowerController towerController;
@@ -35,12 +37,20 @@ public class GameController {
         return towersForSelect;
     }
 
-    public GameController(GameEngine gameEngine, SceneController sceneController, GameMap gameMap, List<Tower> towers) {
+    private NetworkSession networkSession;
+
+    /* -------- конструктор -------- */
+    public GameController(GameEngine gameEngine,
+                          SceneController sceneController,
+                          GameMap gameMap,
+                          List<Tower> towers) {
         this.gameEngine = gameEngine;
         this.gameMap = gameMap;
         this.towers = towers;
         this.sceneController = sceneController;
-        this.playerState = new PlayerState("Zimbel", 80);
+
+        // MVP — один игрок, базовые ресурсы
+        this.playerState = new PlayerState("Player", 100);
         this.techTreeController = new TechTreeController(techTreeConfigs, playerState);
         this.towerController = new TowerController(gameMap, towers);
     }
@@ -148,29 +158,45 @@ public class GameController {
     }
 
 
-    public TowerConfig getSelectedTower() {
-        return selectedTower;
+
+
+
+
+    /* -------- сетевой слой -------- */
+    public void setNetworkSession(NetworkSession session) {
+        this.networkSession = session;
     }
 
+    private boolean isMultiplayer() {
+        return networkSession != null && networkSession.isConnected();
+    }
+
+    /* -------- методы работы с башнями -------- */
+
+
+    /** Вызывается сетью — без проверок денег/selectedTower. */
+    public synchronized void placeTowerRemote(String towerName, int x, int y) {
+        Optional<TowerConfig> cfg = findTowerConfigByName(towerName);
+        cfg.ifPresent(c -> towerController.addTower(c, x, y));
+    }
+
+    private Optional<TowerConfig> findTowerConfigByName(String name) {
+        return towersForSelect.stream()
+                .filter(c -> c.getName().equals(name))
+                .findFirst();
+    }
+
+    public TowerConfig getSelectedTower() { return selectedTower; }
+
     public boolean checkTowerInCell(int x, int y) {
-        for (Tower tower : towers) {
-            if (tower.getX() == x && tower.getY() == y) {
-                return true;
-            }
-        }
+        for (Tower tower : towers) if (tower.getX() == x && tower.getY() == y) return true;
         return false;
     }
 
     public Tower getTowerAtCell(int x, int y) {
-        for (Tower tower : towers) {
-            if (tower.getX() == x && tower.getY() == y) {
-                return tower;
-            }
-        }
+        for (Tower tower : towers) if (tower.getX() == x && tower.getY() == y) return tower;
         return null;
     }
 
-    public int coinsNow() {
-        return playerState.getCoins();
-    }
+    public int coinsNow() { return playerState.getCoins(); }
 }

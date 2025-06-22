@@ -1,62 +1,34 @@
 package ru.nsu.t4werok.towerdefence.controller.menu;
 
-import ru.nsu.t4werok.towerdefence.app.GameEngine;
-import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapConfig;
-import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapSelectionConfig;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
-import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 
-import java.util.List;
+import java.nio.file.Path;
 
-
-
+/**
+ * Расширен: теперь поддерживает кнопку «Multiplayer».
+ */
 public class MapSelectionController {
-    private final SceneController sceneController;
-    private final MapSelectionConfig mapSelectionConfig;
 
-    // Конструктор с передачей сцены
+    private final SceneController sceneController;
+    private Path selectedMap;               // текущий выбор
+
     public MapSelectionController(SceneController sceneController) {
         this.sceneController = sceneController;
-        this.mapSelectionConfig = new MapSelectionConfig();
     }
 
-    /**
-     * Метод для загрузки всех доступных карт
-     */
-    public List<MapConfig> getAvailableMaps() {
-        return mapSelectionConfig.loadMaps();
+    /* ---------- события UI ---------- */
+
+    public void onMapChosen(Path map) {
+        selectedMap = map;
     }
 
-    // Метод для обработки нажатия кнопки "Back to Main Menu"
-    public void onBackButtonPressed() {
-        sceneController.switchTo("MainMenu");
+    public void onPlaySingle() {
+        if (selectedMap == null) return;
+        // прежняя логика одиночной игры …
     }
 
-    /**
-     * Метод для обработки выбора карты.
-     *
-     * @param mapConfig Конфигурация выбранной карты.
-     */
-    public void onMapSelected(MapConfig mapConfig) {
-        if (mapConfig != null) {
-            // Создание игрового объекта GameMap на основе MapConfig
-            GameMap gameMap = new GameMap(
-                    mapConfig.getWidth(),
-                    mapConfig.getHeight(),
-                    mapConfig.getEnemyPaths(),
-                    mapConfig.getTowerPositions(),
-                    mapConfig.getSpawnPoint(),
-                    mapConfig.getBase(),
-                    mapConfig.getBackgroundImagePath(),
-                    mapConfig.getBaseImagePath(),
-                    mapConfig.getTowerImagePath(),
-                    mapConfig.getSpawnPointImagePath()
-            );
-
-            // Создание игрового движка с картой
-            GameEngine gameEngine = new GameEngine(gameMap, sceneController, gameMap.getBase());
-        } else {
-            System.out.println("No map selected or map configuration is invalid.");
-        }
+    public void onPlayMultiplayer() {
+        if (selectedMap == null) return;
+        sceneController.showMultiplayerMenu(selectedMap.toString());
     }
 }

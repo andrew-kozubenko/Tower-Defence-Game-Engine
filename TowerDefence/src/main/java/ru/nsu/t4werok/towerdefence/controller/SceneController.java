@@ -1,60 +1,90 @@
 package ru.nsu.t4werok.towerdefence.controller;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ru.nsu.t4werok.towerdefence.controller.menu.LobbyController;
+import ru.nsu.t4werok.towerdefence.controller.menu.MultiplayerMenuController;
 import ru.nsu.t4werok.towerdefence.managers.menu.SettingsManager;
+import ru.nsu.t4werok.towerdefence.net.MultiplayerClient;
+import ru.nsu.t4werok.towerdefence.net.MultiplayerServer;
+import ru.nsu.t4werok.towerdefence.view.menu.LobbyView;
+import ru.nsu.t4werok.towerdefence.view.menu.MultiplayerMenuView;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/** Управляет сценами и упрощает навигацию в кооперативе. */
 public class SceneController {
-    private final Stage stage; // Главное окно приложения
-    private final Map<String, Scene> scenes = new HashMap<>(); // Карта для хранения сцен
+
+    private final Stage stage;
+    private final Map<String, Scene> scenes = new HashMap<>();
     private final SettingsManager settingsManager = SettingsManager.getInstance();
 
-    public SceneController(Stage stage) {
-        this.stage = stage;
+    public SceneController(Stage stage) { this.stage = stage; }
+
+    /* ---------- базовый API ---------- */
+
+    public void addScene(String n, Scene s) { scenes.put(n, s); }
+    public boolean hasScene(String n)       { return scenes.containsKey(n); }
+    public void removeScene(String n)       { scenes.remove(n); }
+
+    public void switchTo(String n) {
+        Runnable r = () -> {
+            Scene s = scenes.get(n);
+            if (s == null) throw new IllegalArgumentException("Scene '" + n + "' not found");
+            stage.setScene(s);
+        };
+        if (Platform.isFxApplicationThread()) r.run(); else Platform.runLater(r);
     }
 
-    /**
-     * Добавить сцену в контроллер.
-     *
-     * @param name  Уникальное имя сцены.
-     * @param scene Объект сцены.
-     */
-    public void addScene(String name, Scene scene) {
-        scenes.put(name, scene);
-    }
+    /* =================  кооператив  ================= */
 
-    /**
-     * Переключиться на сцену с указанным именем.
-     *
-     * @param name Уникальное имя сцены.
-     */
-    public void switchTo(String name) {
-        Scene scene = scenes.get(name);
-        if (scene == null) {
-            throw new IllegalArgumentException("Scene with name '" + name + "' does not exist.");
+    public void showMultiplayerMenu(String preselect) {
+        if (!hasScene("MultiplayerMenu")) {
+            MultiplayerMenuController c = new MultiplayerMenuController(this);
+            if (preselect != null) c.setSelectedMap(preselect);
+            MultiplayerMenuView v = new MultiplayerMenuView(c);
+            addScene("MultiplayerMenu", v.getScene());
         }
-
-//        // Получаем размеры из настроек
-//        double width = settingsManager.getWidth();
-//        double height = settingsManager.getHeight();
-//
-//        stage.setWidth(width);
-//        stage.setHeight(height);
-
-        stage.setScene(scene);
-
-//        scene.getRoot().applyCss();
-//        scene.getRoot().layout();
+        switchTo("MultiplayerMenu");
     }
-    /**
-     * Удалить сцену из контроллера.
-     *
-     * @param name Уникальное имя сцены.
-     */
-    public void removeScene(String name) {
-        scenes.remove(name);
+
+    public void openLobbyAsHost(int port, String nick, String mapPath) {
+        try {
+            MultiplayerServer srv = new MultiplayerServer(port, mapPath);
+            srv.start();
+
+            MultiplayerClient cli = new MultiplayerClient("127.0.0.1", port, nick);
+            cli.connect();
+
+            showLobby(srv, cli, true, mapPath);
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    public void openLobbyAsClient(String ip, int port, String nick) {
+        try {
+            MultiplayerClient cli = new MultiplayerClient(ip, port, nick);
+            cli.connect();
+
+            showLobby(null, cli, false, null);           // карту сообщит сервер
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    public void showLobby(MultiplayerServer srv,
+                          MultiplayerClient cli,
+                          boolean isHost,
+                          String mapPath) {
+        LobbyController c = new LobbyController(this, srv, cli, isHost, mapPath);
+        LobbyView v = new LobbyView(c);
+        addScene("Lobby", v.getScene());
+        switchTo("Lobby");
+    }
+
+    public void startMultiplayerGame(MultiplayerClient cli,
+                                     boolean isHost,
+                                     String mapPath) {
+        System.out.printf("[SceneController] Game start: map=%s host=%b%n", mapPath, isHost);
+        switchTo("MainMenu");       // TODO: полноценный запуск движка
     }
 }

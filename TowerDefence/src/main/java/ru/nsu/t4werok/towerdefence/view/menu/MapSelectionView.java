@@ -1,65 +1,57 @@
-
+/* src/main/java/ru/nsu/t4werok/towerdefence/view/menu/MapSelectionView.java */
 package ru.nsu.t4werok.towerdefence.view.menu;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
-import ru.nsu.t4werok.towerdefence.config.game.entities.map.MapConfig;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import ru.nsu.t4werok.towerdefence.controller.menu.MapSelectionController;
 
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
-
+/**
+ * Список карт + 2 кнопки: «Play» (solo) и «Multiplayer».
+ */
 public class MapSelectionView {
+
     private final Scene scene;
 
     public MapSelectionView(MapSelectionController controller) {
-        VBox layout = new VBox(15);  // Основной контейнер для отображения карт
-        layout.setAlignment(Pos.CENTER);
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(20));
 
-        // Заголовок
-        Label titleLabel = new Label("Select a GameMap:");
+        /* ---------- список карт ---------- */
+        ListView<Path> list = new ListView<>();
+        try {
+            list.getItems().setAll(
+                    Files.list(Paths.get("assets/maps"))
+                            .filter(p -> p.toString().endsWith(".json"))
+                            .collect(Collectors.toList()));
+        } catch (Exception ignored) {}
+        list.getSelectionModel().selectedItemProperty()
+                .addListener((obs, o, n) -> controller.onMapChosen(n));
+        root.setCenter(list);
 
-        // Контейнер для кнопок карт
-        VBox mapsContainer = new VBox(10);
-        mapsContainer.setAlignment(Pos.CENTER);
+        /* ---------- кнопки ---------- */
+        Button playBtn = new Button("Play");
+        playBtn.setOnAction(e -> controller.onPlaySingle());
 
-        // Загружаем карты через контроллер
-        List<MapConfig> maps = controller.getAvailableMaps();
+        Button mpBtn = new Button("Multiplayer");
+        mpBtn.setOnAction(e -> controller.onPlayMultiplayer());
 
-        if (maps.isEmpty()) {
-            Label noMapsLabel = new Label("No Maps Available");
-            mapsContainer.getChildren().add(noMapsLabel);
-        } else {
-            for (MapConfig mapConfig : maps) {
-                String mapLabel = String.format("Map: " + mapConfig.getMapName(), mapConfig.getWidth(), mapConfig.getHeight());
-                Button mapChoiceButton = new Button(mapLabel);
-                mapChoiceButton.setOnAction(e -> controller.onMapSelected(mapConfig));
-                mapsContainer.getChildren().add(mapChoiceButton);
-            }
-        }
+        HBox buttons = new HBox(10, playBtn, mpBtn);
+        buttons.setAlignment(Pos.CENTER);
+        buttons.setPadding(new Insets(10));
+        root.setBottom(buttons);
 
-        // Кнопка для возврата в главное меню
-        Button backButton = new Button("Back to Main Menu");
-        backButton.setOnAction(e -> controller.onBackButtonPressed());
-
-        // Добавляем все элементы в основной контейнер
-        layout.getChildren().addAll(titleLabel, mapsContainer, backButton);
-
-        // Создаём сцену с контейнером
-        this.scene = new Scene(layout, 400, 300);
-
-        layout.prefWidthProperty().bind(this.scene.widthProperty());
-        layout.prefHeightProperty().bind(this.scene.heightProperty());
+        scene = new Scene(root, 600, 400);
     }
 
-    public Scene getScene() {
-        return scene;
-    }
-
-//    public void show() {
-//    }
+    public Scene getScene() { return scene; }
 }
-
