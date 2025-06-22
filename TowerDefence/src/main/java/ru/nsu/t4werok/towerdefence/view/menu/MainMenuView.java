@@ -25,8 +25,11 @@ public class MainMenuView {
         updateSettingsLabel(settingsLabel); // Устанавливаем начальное значение
 
         // Создание кнопок
-        Button playButton = new Button("Play");
+        Button playButton = new Button("Single Player");
         playButton.setOnAction(e -> controller.onPlayButtonPressed());
+
+        Button multiplayerButton = new Button("Multiplayer");
+        multiplayerButton.setOnAction(e -> controller.onMultiplayerPressed());
 
         Button replayButton = new Button("Replays");
         replayButton.setOnAction(e -> controller.onReplayButtonPressed());
@@ -41,7 +44,14 @@ public class MainMenuView {
         exitButton.setOnAction(e -> controller.onExitButtonPressed());
 
         // Добавляем кнопки в layout
-        layout.getChildren().addAll(settingsLabel, playButton, replayButton, settingsButton, exitButton);
+        layout.getChildren().addAll(
+                settingsLabel,
+                playButton,
+                multiplayerButton,
+                replayButton,
+                settingsButton,
+                exitButton
+        );
 
         // Создаём сцену
         this.scene = new Scene(layout, 400, 300); // Указываем стартовые размеры

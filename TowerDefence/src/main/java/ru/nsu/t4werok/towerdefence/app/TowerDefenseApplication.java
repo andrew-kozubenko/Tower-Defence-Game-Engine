@@ -31,7 +31,7 @@ public class TowerDefenseApplication extends Application {
         MainMenuController mainMenuController = new MainMenuController(sceneController);
         SettingsController settingsController = new SettingsController(sceneController);
         ReplaySelectionController replaySelectionController = new ReplaySelectionController(sceneController);
-        MapSelectionController mapSelectionController = new MapSelectionController(sceneController);
+        MapSelectionController mapSelectionController = new MapSelectionController(sceneController, false);
 
         // Представления
         MainMenuView mainMenuView = new MainMenuView(mainMenuController);

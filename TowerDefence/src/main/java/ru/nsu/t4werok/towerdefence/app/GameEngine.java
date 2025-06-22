@@ -18,6 +18,8 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Wave;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.network.client.GameClient;
+import ru.nsu.t4werok.towerdefence.network.server.GameServer;
 import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
 import ru.nsu.t4werok.towerdefence.view.game.GameView;
 import ru.nsu.t4werok.towerdefence.view.game.entities.enemy.AllEnemiesView;
@@ -39,6 +41,7 @@ public class GameEngine {
     private AnimationTimer gameLoop; // Игровой цикл
     private final List<Enemy> enemies = new ArrayList<>(); // Список врагов
     private final List<Tower> towers = new ArrayList<>(); // Список башен на карте
+    private Base base; // База
 
     private int waveNumber = 0; // Номер текущей волны
 
@@ -58,19 +61,35 @@ public class GameEngine {
     private final WavesConfig wavesConfig;
     private final WaveController waveController;
 
-    private Base base; // База
+    private final boolean isMultiplayer;
+    private final GameClient client;
+    private final GameServer server;
 
     public GameEngine(GameMap gameMap, SceneController sceneController, Base base) {
+        this(gameMap, sceneController, base, false, null, null);
+    }
+
+    public GameEngine(GameMap gameMap, SceneController sceneController, Base base, GameServer server) {
+        this(gameMap, sceneController, base, true, null, server);
+    }
+
+    public GameEngine(GameMap gameMap, SceneController sceneController, Base base, GameClient client) {
+        this(gameMap, sceneController, base, true, client, null);
+    }
+
+    public GameEngine(GameMap gameMap, SceneController sceneController, Base base,
+                      boolean isMultiplayer, GameClient client, GameServer server) {
         this.gameMap = gameMap;
         this.sceneController = sceneController;
         this.base = base; // Передаем базу
+        this.isMultiplayer = isMultiplayer;
+        this.client = client;
+        this.server = server;
 
         // Подготавливаем контроллеры
         this.gameController = new GameController(this, sceneController, gameMap, towers);
         this.gameView = new GameView(gameController, this);
-        // Добавляем игровую сцену в SceneController
         sceneController.addScene("Game", gameView.getScene());
-        // Переключаемся на игровую сцену
         sceneController.switchTo("Game");
         allEnemiesView = new AllEnemiesView();
         towerView = new TowerView(gameController, gameView.getGc(), gameView.getCanvas(), gameMap);
