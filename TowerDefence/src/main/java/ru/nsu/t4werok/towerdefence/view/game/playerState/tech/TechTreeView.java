@@ -1,8 +1,10 @@
 package ru.nsu.t4werok.towerdefence.view.game.playerState.tech;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Popup;
 import javafx.stage.Window;
 import ru.nsu.t4werok.towerdefence.config.game.entities.tower.TowerConfig;
@@ -29,11 +31,14 @@ public class TechTreeView {
     public void showUpgradesWindow(TowerConfig cfg) {
         Popup pop = new Popup();
         VBox  box = layout("Unlock upgrades – " + cfg.getName());
+        box.setStyle("-fx-padding: 1; -fx-background-color: #F5F5F5; -fx-border-color: #333333; -fx-border-width: 1;");
+
 
         TechTree tree = cfg.getTechTree();
         if (tree == null) box.getChildren().add(new Label("No tech tree"));
         else for (TechNode root : tree.getRoots())
             addNodeUnlock(root, box, 0);
+
 
         pop.getContent().add(box);
         pop.setAutoHide(true);
@@ -66,11 +71,26 @@ public class TechTreeView {
                     if (gc.buyUpgradeForTower(tower, n)) {
                         pop.hide();                               // перерисовать окно
                         showTowerUpgradeMenu(tower, trees);
+                        tower.setPrice(n.getCost()); // добавляем к стоимости башни стоимость ее улучшений
                     } else warn("Cannot apply", "Not enough coins.");
                 });
                 box.getChildren().add(b);
             }
         }
+
+        // ——— кнопка "Продать" ———
+        Button sellButton = new Button("Sell");
+        sellButton.setOnAction(e -> {
+            if (gc.sellTower(tower)) {  // предполагается, что есть метод sellTower
+//                pop.hide();
+//                updateHUD();            // обновление интерфейса
+            } else {
+                warn("Cannot sell", "Tower cannot be sold.");
+            }
+        });
+        box.getChildren().add(new Separator()); // разделитель, по желанию
+        box.getChildren().add(sellButton);
+
         pop.getContent().add(box);
         pop.setAutoHide(true);
         pop.show(primary());
@@ -113,7 +133,11 @@ public class TechTreeView {
         line.setPadding(new Insets(0, 0, 0, depth * 20));
         line.setStyle("-fx-padding:5; -fx-background-color:#E8E8E8; -fx-border-color:#CCC;");
 
-        Button info = new Button(n.getName() + " (" + n.getCost() + " coins)");
+        Label info = new Label(n.getName() + " (" + n.getCost() + " coins)");
+        info.setAlignment(Pos.CENTER_LEFT); // Центр по вертикали, если Label имеет высоту
+        info.setPrefHeight(25); // Задаём высоту строки (как у кнопки)
+        HBox.setMargin(info, new Insets(4, 0, 4, 0)); // Вертикальный отступ
+
         Button buy  = new Button(n.isUnlocked() ? "Unlocked" : "Unlock");
 
         buy.setDisable(n.isUnlocked() ||
@@ -129,6 +153,8 @@ public class TechTreeView {
             buy.setDisable(true);
             for (TechNode child : n.getChildren())
                 addNodeUnlock(child, parent, depth + 1);
+
+//            updateHUD();
         });
 
         line.getChildren().addAll(info, buy);
@@ -146,4 +172,7 @@ public class TechTreeView {
         a.setContentText(m);
         a.showAndWait();
     }
+
+
+
 }

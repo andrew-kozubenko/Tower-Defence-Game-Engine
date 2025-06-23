@@ -46,6 +46,7 @@ public class TowerView {
             Button upgradesButton = new Button("Upgrades");
             upgradesButton.setOnAction(e -> techTreeView.showUpgradesWindow(towerConfig));
 
+
             content.getChildren().addAll(selectButton, upgradesButton);
 
             TitledPane pane = new TitledPane(towerConfig.getName(), content);

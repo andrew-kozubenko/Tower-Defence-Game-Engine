@@ -128,6 +128,7 @@ public class GameEngine {
                 // Ограничение частоты обновлений
                 long deltaTime = now - lastUpdateTime;
                 if (deltaTime >= TARGET_TIME_PER_FRAME) {
+                    System.out.println("hi");
                     lastUpdateTime = now; // Обновляем время последнего обновления
                     update(); // Обновление состояния игры
                     render(); // Отрисовка объектов
@@ -179,8 +180,8 @@ public class GameEngine {
         Canvas canvas = gameView.getCanvas();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
+        System.out.println("Hello");
         gameView.getMapView().renderMap();
-
         for (Tower tower : towers) {
             towerView.renderTower(tower);
             if (tower.getAttackX() != -1) {

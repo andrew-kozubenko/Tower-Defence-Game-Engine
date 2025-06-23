@@ -48,7 +48,6 @@ public class GameView {
         gameController.loadTowersForSelect();
         towerView.viewTowersForSelect(towerListPanel);
 
-
         startButton = new Button("Start");
         startButton.setOnAction(e -> {
             // Логика первого нажатия
@@ -111,16 +110,27 @@ public class GameView {
                 Tower tower = gameController.placeTower(towerXCell, towerYCell);
                 if (tower != null) {
                     towerView.renderTower(tower);
-                    mapView.renderHUD(gameController.coinsNow(), gameController.getGameMap().getBase().getHealth());
-
+                } else {
+                    gameController.setSelectedTower(null);
                 }
-            } else if (gameController.checkTowerInCell(towerXCell, towerYCell)) {
+            }
+
+            if (gameController.getSelectedTower() == null && gameController.checkTowerInCell(towerXCell, towerYCell)) {
                 Tower tower = gameController.getTowerAtCell(towerXCell, towerYCell);
                 if (tower != null) {
                     towerView.showTowerUpgradeMenu(tower, gameController.getTechTrees());
                 }
             }
-            gameController.setSelectedTower(null);
+//            else {
+//                gameController.setSelectedTower(null);
+//            }
+//            gameController.setSelectedTower(null);
+
+
+        });
+
+        scene.setOnMouseClicked(e -> {
+            mapView.renderHUD(gameController.coinsNow(), gameController.getGameMap().getBase().getHealth());
         });
     }
 

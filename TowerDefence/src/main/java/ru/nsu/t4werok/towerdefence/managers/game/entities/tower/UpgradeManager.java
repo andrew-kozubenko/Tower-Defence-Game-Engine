@@ -8,19 +8,20 @@ public class UpgradeManager {
             switch (upgrade) {
                 case "ImproveDamage":
                     // Улучшаем урон башни, например, увеличиваем на 20%
-                    tower.setDamage((int) (tower.getDamage() * 1.2));
+                    tower.setDamage((int)  Math.round(tower.getDamage() * 1.2));
+//                    tower.setPrice();
                     System.out.println("Tower damage increased!");
                     break;
 
                 case "ImproveRange":
                     // Улучшаем радиус действия башни на 15%
-                    tower.setAttackRadius(tower.getAttackRadius() * 1.15);
+                    tower.setAttackRadius(Math.round(tower.getAttackRadius() * 1.15 * 100.0) / 100.0);
                     System.out.println("Tower range increased!");
                     break;
 
                 case "ImproveFireRate":
                     // Уменьшаем время между выстрелами (увеличиваем частоту стрельбы)
-                    tower.setFireRate((long) (tower.getFireRate() * 0.8)); // Уменьшаем fireRate на 20%
+                    tower.setFireRate(Math.round(tower.getFireRate() * 0.8 * 100.0) / 100.0); // Уменьшаем fireRate на 20%
                     System.out.println("Tower fire rate increased!");
                     break;
 
