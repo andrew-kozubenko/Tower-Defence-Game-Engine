@@ -38,7 +38,7 @@ public class LobbyController {
 
     public void leaveLobby() {
         client.disconnect();
-        if (server != null) server.shutdown();
+        if (server != null) server.close();
         sceneController.switchTo("MainMenu");
         sceneController.removeScene("Lobby");
     }

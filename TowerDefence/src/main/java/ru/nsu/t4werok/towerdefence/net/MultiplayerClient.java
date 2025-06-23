@@ -2,21 +2,19 @@ package ru.nsu.t4werok.towerdefence.net;
 
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.controller.menu.LobbyController;
+import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
+import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Клиент кооператива: поддержка лобби и синхронизации игры.
+ * Логика прежняя, вместо «CMD;…» передаются/принимаются JSON-NetMessage.
  */
 public class MultiplayerClient extends Thread implements NetworkSession {
-
-    private static final String HELLO   = "HELLO";
-    private static final String PLAYERS = "PLAYERS";
-    private static final String START   = "START";
 
     private final String hostIp;
     private final int    port;
@@ -25,8 +23,8 @@ public class MultiplayerClient extends Thread implements NetworkSession {
     private Socket socket;
     private PrintWriter out;
 
-    private volatile boolean running = true;
-    private volatile GameController controller;
+    private volatile boolean       running         = true;
+    private volatile GameController   controller;
     private volatile LobbyController lobbyController;
 
     private final List<String> playerNames = new CopyOnWriteArrayList<>();
@@ -44,18 +42,19 @@ public class MultiplayerClient extends Thread implements NetworkSession {
     public void connect() throws IOException {
         socket = new Socket(hostIp, port);
         out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-        out.println(HELLO + ";" + nickname);          // identify in lobby
+
+        /* HELLO */
+        send(new NetMessage(NetMessageType.HELLO, Map.of("name", nickname)));
+
         start();
     }
 
     public void disconnect() { close(); }
 
     public void setLobbyController(LobbyController l) { this.lobbyController = l; }
-    public void attachGameController(GameController c){ this.controller = c; }
+    public void attachGameController(GameController c){ this.controller      = c; }
 
-    public List<String> getConnectedPlayers() {
-        return new ArrayList<>(playerNames);
-    }
+    public List<String> getConnectedPlayers() { return new ArrayList<>(playerNames); }
 
     /* ------------------- thread ------------------ */
 
@@ -66,27 +65,33 @@ public class MultiplayerClient extends Thread implements NetworkSession {
 
             String line;
             while (running && (line = in.readLine()) != null) {
+                NetMessage msg = NetMessage.fromJson(line);
 
-                /* lobby */
-                if (line.startsWith(PLAYERS)) {
-                    String[] p = line.split(";");
-                    playerNames.clear();
-                    for (int i = 1; i < p.length; i++) playerNames.add(p[i]);
-                    continue;
-                }
-                if (line.startsWith(START)) {
-                    String[] p = line.split(";", 2);
-                    String map = p.length > 1 ? p[1] : null;
-                    if (lobbyController != null)
-                        lobbyController.onGameStartSignal(map);
-                    continue;
-                }
+                switch (msg.getType()) {
 
-                /* game */
-                if (NetworkMessage.isPlaceTower(line) && controller != null) {
-                    String[] p = NetworkMessage.split(line);
-                    controller.placeTowerRemote(p[1],
-                            Integer.parseInt(p[2]), Integer.parseInt(p[3]));
+                    /* ---------- lobby ---------- */
+                    case PLAYERS -> {
+                        // payload: { players : ["nick1","nick2",…] }
+                        List<?> list = msg.get("players");
+                        playerNames.clear();
+                        for (Object o : list) playerNames.add(String.valueOf(o));
+                    }
+                    case START -> {
+                        String map = msg.get("map");
+                        if (lobbyController != null)
+                            lobbyController.onGameStartSignal(map);
+                    }
+
+                    /* ---------- game ----------- */
+                    case PLACE_TOWER -> {
+                        if (controller == null) break;
+                        String tower = msg.get("tower");
+                        int    x     = (Integer) msg.get("x");
+                        int    y     = (Integer) msg.get("y");
+                        controller.placeTowerRemote(tower, x, y);
+                    }
+
+                    default -> { /* игнорируем остальные */ }
                 }
             }
         } catch (IOException ignored) {
@@ -97,8 +102,12 @@ public class MultiplayerClient extends Thread implements NetworkSession {
 
     @Override
     public void sendPlaceTower(String towerName, int x, int y) {
-        if (out != null)
-            out.println(NetworkMessage.encodePlaceTower(towerName, x, y));
+        send(new NetMessage(NetMessageType.PLACE_TOWER,
+                Map.of("tower", towerName, "x", x, "y", y)));
+    }
+
+    private void send(NetMessage msg) {
+        if (out != null) out.println(msg.toJson());
     }
 
     @Override public boolean isConnected() { return socket != null && socket.isConnected() && !socket.isClosed(); }
