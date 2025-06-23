@@ -18,6 +18,9 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Wave;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
+import ru.nsu.t4werok.towerdefence.net.LocalMultiplayerContext;
+import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
+import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
 import ru.nsu.t4werok.towerdefence.view.game.GameView;
 import ru.nsu.t4werok.towerdefence.view.game.entities.enemy.AllEnemiesView;
@@ -104,6 +107,12 @@ public class GameEngine {
         }
 
         waveController = new WaveController(wavesConfig, enemiesConfig, gameMap.getEnemyPaths().size());
+
+        LocalMultiplayerContext.get().bindEngine(this);
+    }
+
+    public GameController getGameController() {
+        return gameController;
     }
 
     public void setRunning(boolean running) {
@@ -214,5 +223,17 @@ public class GameEngine {
 
     public boolean nextWave() {
         return waveController.nextWave();
+    }
+
+    /* =====================================================================
+       Приём сетевых сообщений
+       ===================================================================== */
+    public void handleNetworkMessage(NetMessage msg){
+        if (msg.getType() == NetMessageType.PLACE_TOWER){
+            String tower = msg.get("tower");
+            int    x     = (Integer) msg.get("x");
+            int    y     = (Integer) msg.get("y");
+            gameController.placeTowerRemote(tower, x, y);
+        }
     }
 }
