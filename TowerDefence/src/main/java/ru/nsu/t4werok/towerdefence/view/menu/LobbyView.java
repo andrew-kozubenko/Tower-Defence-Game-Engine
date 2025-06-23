@@ -35,7 +35,7 @@ public class LobbyView {
 
         Button startBtn = new Button("Start");
         startBtn.setDisable(!controller.isHost());
-        startBtn.setOnAction(e -> controller.startGame());
+        startBtn.setOnAction(e -> controller.onStartClicked());
 
         BorderPane bottom = new BorderPane();
         bottom.setLeft(leaveBtn);

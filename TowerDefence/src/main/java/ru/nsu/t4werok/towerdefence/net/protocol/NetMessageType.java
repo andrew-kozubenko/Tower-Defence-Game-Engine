@@ -1,15 +1,17 @@
 package ru.nsu.t4werok.towerdefence.net.protocol;
 
 /**
- * Перечень всех сетевых сообщений.
- * Расширен для полноценного кооператива.
+ * Типы сетевых сообщений.
+ * START теперь содержит:
+ *   { map : "maps/Forest.json",
+ *     data: "<base64-zip-blob со всеми ресурсами>" }
  */
 public enum NetMessageType {
     HELLO,            // hand-shake
     PLAYERS,          // список игроков/их статусы
     READY,
     CANCEL_READY,
-    START,            // запуск игры (map + seed)
+    START,            // запуск игры + zip-blob ресурсов
     PLACE_TOWER,
     UPGRADE_TOWER,
     SELL_TOWER,

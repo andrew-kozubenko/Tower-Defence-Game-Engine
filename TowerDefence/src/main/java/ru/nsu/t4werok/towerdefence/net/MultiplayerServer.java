@@ -1,5 +1,6 @@
 package ru.nsu.t4werok.towerdefence.net;
 
+import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
@@ -7,8 +8,14 @@ import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Хост-сервер: лобби + ретрансляция игровых событий.
@@ -21,9 +28,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class MultiplayerServer extends Thread implements NetworkSession {
 
+    private static final Path USER_SD_DIR =
+            Paths.get(System.getProperty("user.home"),
+                    "Documents", "Games", "TowerDefenceSD");
+
     private final int  port;
     private final String mapPath;           // карта, выбранная хостом
     private final GameController controller;// null, пока лобби
+    private SceneController sceneController;// внедряется из LobbyController
 
     private final List<ClientHandler> clients     = new CopyOnWriteArrayList<>();
     private final List<String>        playerNames = new CopyOnWriteArrayList<>();
@@ -47,6 +59,8 @@ public class MultiplayerServer extends Thread implements NetworkSession {
         setName("TD-Server");
     }
 
+    public void injectSceneController(SceneController sc) { this.sceneController = sc; }
+
     /* ---------------------------- run ---------------------------- */
 
     @Override
@@ -58,6 +72,91 @@ public class MultiplayerServer extends Thread implements NetworkSession {
             }
         } catch (IOException ignored) {
         } finally { close(); }
+    }
+
+    /** Вызывается из LobbyController, когда хост нажал «Start». */
+    public void startGame() {
+        try {
+            // 1. Сформировать zip-архив всех нужных ресурсов
+            byte[] zipBytes = buildGameAssetsZip();
+
+            // 2. Base64-строка для пересылки
+            String blob = Base64.getEncoder().encodeToString(zipBytes);
+
+            // 3. Broadcast START {map, data}
+            NetMessage startMsg = new NetMessage(NetMessageType.START,
+                    Map.of("map",  mapPath,
+                            "data", blob));
+            broadcast(startMsg);
+
+            // 4. Распаковать локально (хосту тоже нужен SD каталог)
+            unpackZipToSd(zipBytes);
+
+            // 5. Запустить движок локально
+            if (sceneController != null)
+                sceneController.startMultiplayerGame(Paths.get(mapPath), /*isHost=*/true);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* ---------- helpers ---------- */
+
+    private byte[] buildGameAssetsZip() throws IOException {
+        // Собираем директории, которые надо отдать клиенту
+        Path root = Paths.get("").toAbsolutePath(); // корень проекта (resources рядом)
+        List<Path> dirs = List.of(
+                root.resolve("maps"),
+                root.resolve("towers"),
+                root.resolve("waves"),
+                root.resolve("enemy"),
+                root.resolve("settings"),
+                root.resolve("techTree"),
+                root.resolve("image")
+        );
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            for (Path dir : dirs) {
+                if (!Files.exists(dir)) continue;
+                Files.walk(dir).forEach(p -> {
+                    if (Files.isDirectory(p)) return;
+                    try (InputStream in = Files.newInputStream(p)) {
+                        String entryName = root.relativize(p).toString().replace("\\", "/");
+                        zos.putNextEntry(new ZipEntry(entryName));
+                        in.transferTo(zos);
+                        zos.closeEntry();
+                    } catch (IOException e) { throw new UncheckedIOException(e); }
+                });
+            }
+            // карта отдельно (если лежит вне каталога maps — добавим явно)
+            Path map = Paths.get(mapPath);
+            if (Files.exists(map)) {
+                try (InputStream in = Files.newInputStream(map)) {
+                    zos.putNextEntry(new ZipEntry("maps/" + map.getFileName()));
+                    in.transferTo(zos);
+                    zos.closeEntry();
+                }
+            }
+        }
+        return baos.toByteArray();
+    }
+
+    private void unpackZipToSd(byte[] zipBytes) throws IOException {
+        if (!Files.exists(USER_SD_DIR)) Files.createDirectories(USER_SD_DIR);
+        try (java.util.zip.ZipInputStream zis =
+                     new java.util.zip.ZipInputStream(new ByteArrayInputStream(zipBytes))) {
+            ZipEntry e;
+            while ((e = zis.getNextEntry()) != null) {
+                Path dst = USER_SD_DIR.resolve(e.getName());
+                Files.createDirectories(dst.getParent());
+                try (OutputStream out = Files.newOutputStream(dst, StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING)) {
+                    zis.transferTo(out);
+                }
+            }
+        }
     }
 
     /* -------------------- NetworkSession ------------------------ */
@@ -90,12 +189,6 @@ public class MultiplayerServer extends Thread implements NetworkSession {
     private void sendPlayersToAll() {
         broadcast(new NetMessage(NetMessageType.PLAYERS,
                 Map.of("players", playerNames)));
-    }
-
-    /** Вызывается из LobbyController у хоста. */
-    public void startGame() {
-        broadcast(new NetMessage(NetMessageType.START,
-                Map.of("map", mapPath)));
     }
 
     /* ------------------- broadcast util ------------------------- */
