@@ -85,7 +85,7 @@ public class GameController {
             Tower tower = towerController.addTower(selectedTower, x, y);
 
             // Сбрасываем выбранную башню
-            selectedTower = null;
+//            selectedTower = null;
 
             return tower;
         } else {
