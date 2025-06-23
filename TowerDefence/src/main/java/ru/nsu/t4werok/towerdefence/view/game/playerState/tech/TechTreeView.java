@@ -71,11 +71,26 @@ public class TechTreeView {
                     if (gc.buyUpgradeForTower(tower, n)) {
                         pop.hide();                               // перерисовать окно
                         showTowerUpgradeMenu(tower, trees);
+                        tower.setPrice(n.getCost()); // добавляем к стоимости башни стоимость ее улучшений
                     } else warn("Cannot apply", "Not enough coins.");
                 });
                 box.getChildren().add(b);
             }
         }
+
+        // ——— кнопка "Продать" ———
+        Button sellButton = new Button("Sell");
+        sellButton.setOnAction(e -> {
+            if (gc.sellTower(tower)) {  // предполагается, что есть метод sellTower
+//                pop.hide();
+//                updateHUD();            // обновление интерфейса
+            } else {
+                warn("Cannot sell", "Tower cannot be sold.");
+            }
+        });
+        box.getChildren().add(new Separator()); // разделитель, по желанию
+        box.getChildren().add(sellButton);
+
         pop.getContent().add(box);
         pop.setAutoHide(true);
         pop.show(primary());

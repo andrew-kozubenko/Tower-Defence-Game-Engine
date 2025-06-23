@@ -50,7 +50,7 @@ public class GameController {
         this.sceneController = sceneController;
 
         // MVP — один игрок, базовые ресурсы
-        this.playerState = new PlayerState("Player", 100);
+        this.playerState = new PlayerState("Player", 10000);
         this.techTreeController = new TechTreeController(techTreeConfigs, playerState);
         this.towerController = new TowerController(gameMap, towers);
     }
@@ -78,11 +78,15 @@ public class GameController {
 
         int cost = selectedTower.getPrice();
         if (coinsNow() >= cost) {
-            // Списываем деньги за башню
-            playerState.spendCoins(cost);
 
             // Добавляем башню через контроллер
             Tower tower = towerController.addTower(selectedTower, x, y);
+
+            // Списываем деньги за башню
+            if (tower != null) {
+                playerState.spendCoins(cost);
+            }
+
 
             // Сбрасываем выбранную башню
 //            selectedTower = null;
@@ -93,6 +97,28 @@ public class GameController {
             return null;
         }
     }
+
+    public boolean sellTower(Tower tower) {
+        // Удаляем башню из списка
+        if (!towers.remove(tower)) return false;
+
+        // Сумма:
+        double refund = tower.getPrice() * 0.7; // 70% возврат базовой цены
+
+        // Округляем до сотых
+        refund = Math.round(refund * 100.0) / 100.0;
+
+        // Добавляем монеты игроку
+        playerState.addCoins((int) refund);
+
+        // Удаляем башню с карты
+//        gameMap.clearTowerAt(tower.getX(), tower.getY());
+
+        // Обновляем интерфейс
+//        updateHUD();
+        return true;
+    }
+
 
     public void selectTower(TowerConfig towerConfig) {
         this.selectedTower = towerConfig;

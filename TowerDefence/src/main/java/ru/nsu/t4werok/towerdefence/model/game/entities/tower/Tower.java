@@ -130,8 +130,8 @@ public class Tower {
     public void setY(int y) {
         this.y = y;
     }
-    public void setPrice(int price) {
-        this.price = price;
+    public void setPrice(int x) {
+        this.price = price + x;
     }
     public void setDamage(int damage) {
         this.damage = damage;

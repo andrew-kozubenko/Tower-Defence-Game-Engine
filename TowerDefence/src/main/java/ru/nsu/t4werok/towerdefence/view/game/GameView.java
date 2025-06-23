@@ -48,7 +48,6 @@ public class GameView {
         gameController.loadTowersForSelect();
         towerView.viewTowersForSelect(towerListPanel);
 
-
         startButton = new Button("Start");
         startButton.setOnAction(e -> {
             // Логика первого нажатия
