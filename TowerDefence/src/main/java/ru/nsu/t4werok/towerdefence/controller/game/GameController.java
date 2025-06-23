@@ -14,6 +14,7 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.PlayerState;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
+import ru.nsu.t4werok.towerdefence.net.LocalMultiplayerContext;
 import ru.nsu.t4werok.towerdefence.net.NetworkSession;
 
 import java.util.ArrayList;
@@ -21,38 +22,43 @@ import java.util.List;
 import java.util.Optional;
 
 public class GameController {
-    private final TowerController towerController;
+    /* -------- прежние поля -------- */
+    private final TowerController    towerController;
     private final TechTreeController techTreeController;
-    private final GameMap gameMap;
-    private final List<Tower> towers;
-    private final SceneController sceneController;
-    private List<TowerConfig> towersForSelect; // Список башен на выбор
+    private final GameMap            gameMap;
+    private final List<Tower>        towers;
+    private final SceneController    sceneController;
+    private final GameEngine         gameEngine;
+
+    private List<TowerConfig> towersForSelect;
     private List<TechTreeConfig> techTreeConfigs;
-    private TowerConfig selectedTower = null;
-    private final GameEngine gameEngine;
-    private PlayerState playerState;
-    private List<TechTree> techTrees = new ArrayList<>();
+    private final List<TechTree> techTrees = new ArrayList<>();
+    private TowerConfig selectedTower;
+
+    private final PlayerState playerState = new PlayerState("Player", 10_000);
+
+    /* --- сетевой слой --- */
+    private NetworkSession networkSession;               // теперь изменяемый
+
+    /* ---------------- ctor ---------------- */
+    public GameController(GameEngine engine,
+                          SceneController sc,
+                          GameMap map,
+                          List<Tower> sharedTowers) {
+        this.gameEngine      = engine;
+        this.sceneController = sc;
+        this.gameMap         = map;
+        this.towers          = sharedTowers;
+
+        this.techTreeController = new TechTreeController(techTreeConfigs, playerState);
+        this.towerController    = new TowerController(map, sharedTowers);
+
+        /* берём сессию, если уже зарегистрирована */
+        this.networkSession = LocalMultiplayerContext.get().getSession();
+    }
 
     public List<TowerConfig> getTowersForSelect() {
         return towersForSelect;
-    }
-
-    private NetworkSession networkSession;
-
-    /* -------- конструктор -------- */
-    public GameController(GameEngine gameEngine,
-                          SceneController sceneController,
-                          GameMap gameMap,
-                          List<Tower> towers) {
-        this.gameEngine = gameEngine;
-        this.gameMap = gameMap;
-        this.towers = towers;
-        this.sceneController = sceneController;
-
-        // MVP — один игрок, базовые ресурсы
-        this.playerState = new PlayerState("Player", 10000);
-        this.techTreeController = new TechTreeController(techTreeConfigs, playerState);
-        this.towerController = new TowerController(gameMap, towers);
     }
 
     public GameMap getGameMap() {
@@ -71,31 +77,44 @@ public class GameController {
         this.towersForSelect = towersForSelect;
     }
 
+    /** Вызывается локальным UI. */
+    /* ===================================================================
+                          ПОСТАНОВКА БАШНИ (локально)
+       =================================================================== */
     public Tower placeTower(int x, int y) {
-        if (selectedTower == null) {
-            return null; // Нет выбранной башни
-        }
+        if (selectedTower == null) return null;
+        if (playerState.getCoins() < selectedTower.getPrice()) return null;
 
-        int cost = selectedTower.getPrice();
-        if (coinsNow() >= cost) {
+        Tower t = towerController.addTower(selectedTower, x, y);
+        if (t == null) return null;
 
-            // Добавляем башню через контроллер
-            Tower tower = towerController.addTower(selectedTower, x, y);
+        playerState.spendCoins(selectedTower.getPrice());
 
-            // Списываем деньги за башню
-            if (tower != null) {
-                playerState.spendCoins(cost);
-            }
+        if (isMultiplayer())
+            networkSession.sendPlaceTower(selectedTower.getName(), x, y);
 
+        return t;
+    }
 
-            // Сбрасываем выбранную башню
-//            selectedTower = null;
+    /* ===================================================================
+                       ПОСТАНОВКА БАШНИ (пришла по сети)
+       =================================================================== */
+    public synchronized void placeTowerRemote(String towerName, int x, int y) {
+        if (towersForSelect == null) return;
+        towersForSelect.stream()
+                .filter(cfg -> cfg.getName().equals(towerName))
+                .findFirst()
+                .ifPresent(cfg -> towerController.addTower(cfg, x, y));
+    }
 
-            return tower;
-        } else {
-            // Денег недостаточно, башня не ставится
-            return null;
-        }
+    /* ===================================================================
+                             утилиты
+       =================================================================== */
+    public void setNetworkSession(NetworkSession s) {    // ⭐ новый сеттер
+        this.networkSession = s;
+    }
+    private boolean isMultiplayer() {
+        return networkSession != null && networkSession.isConnected();
     }
 
     public boolean sellTower(Tower tower) {
@@ -183,29 +202,7 @@ public class GameController {
         return techTreeController.isUpgradeAvailable(node);
     }
 
-
-
-
-
-
-    /* -------- сетевой слой -------- */
-    public void setNetworkSession(NetworkSession session) {
-        this.networkSession = session;
-    }
-
-    private boolean isMultiplayer() {
-        return networkSession != null && networkSession.isConnected();
-    }
-
     /* -------- методы работы с башнями -------- */
-
-
-    /** Вызывается сетью — без проверок денег/selectedTower. */
-    public synchronized void placeTowerRemote(String towerName, int x, int y) {
-        Optional<TowerConfig> cfg = findTowerConfigByName(towerName);
-        cfg.ifPresent(c -> towerController.addTower(c, x, y));
-    }
-
     private Optional<TowerConfig> findTowerConfigByName(String name) {
         return towersForSelect.stream()
                 .filter(c -> c.getName().equals(name))

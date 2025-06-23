@@ -140,6 +140,13 @@ public class SceneController {
         );
 
         /* 4. Создаём и запускаем GameEngine */
-        new GameEngine(gameMap, this, gameMap.getBase()).start();
+        GameEngine engine = new GameEngine(gameMap, this, gameMap.getBase());
+        engine.start();
+
+        /* 5. ⬅️  Новое: если мы в роли клиента, «скрестим» его с контроллером */
+        var sess = ru.nsu.t4werok.towerdefence.net.LocalMultiplayerContext.get().getSession();
+        if (sess instanceof ru.nsu.t4werok.towerdefence.net.MultiplayerClient cli) {
+            cli.attachGameController(engine.getGameController());
+        }
     }
 }

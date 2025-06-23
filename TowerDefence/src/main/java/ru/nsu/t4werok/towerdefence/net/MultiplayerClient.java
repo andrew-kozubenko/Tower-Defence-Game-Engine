@@ -8,161 +8,137 @@ import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Клиент кооператива: поддержка лобби и синхронизации игры.
- * Логика прежняя, вместо «CMD;…» передаются/принимаются JSON-NetMessage.
+ * Сетевой клиент кооператива (TCP).
+ * Поддерживает лобби и синхронизацию действий в игре.
  */
 public class MultiplayerClient extends Thread implements NetworkSession {
 
-    private static final Path USER_SD_DIR =
-            Paths.get(System.getProperty("user.home"),
-                    "Documents", "Games", "TowerDefenceSD");
+    /* ---------------- config ---------------- */
+    private static final Path SD_DIR = Paths.get(System.getProperty("user.home"),
+            "Documents", "Games", "TowerDefenceSD");
 
     private final String hostIp;
     private final int    port;
     private final String nickname;
 
-    private Socket socket;
-    private PrintWriter out;
+    /* ---------------- net ---------------- */
+    private Socket        socket;
+    private BufferedReader in;
+    private PrintWriter    out;
 
-    private volatile boolean       running         = true;
-    private volatile GameController   controller;
-    private volatile LobbyController lobbyController;
-    private volatile SceneController sceneController;
+    /* ---------------- refs ---------------- */
+    private volatile LobbyController lobby;
+    private volatile GameController  game;
+    private volatile SceneController scene;
 
-    private final List<String> playerNames = new CopyOnWriteArrayList<>();
+    /* ---------------- state ---------------- */
+    private final List<String> players = new CopyOnWriteArrayList<>();
+    private volatile boolean   running = true;
 
-    public MultiplayerClient(String hostIp, int port, String nickname) {
-        this.hostIp   = hostIp;
-        this.port     = port;
-        this.nickname = nickname;
+    public MultiplayerClient(String ip, int port, String nick) {
+        this.hostIp = ip; this.port = port; this.nickname = nick;
         setDaemon(true);
         setName("TD-Client");
     }
 
-    /* ---------- DI ---------- */
-    public void injectSceneController(SceneController sc) { this.sceneController = sc; }
-
-    /* ---------------- life-cycle ---------------- */
+    /* ================= life-cycle ================= */
 
     public void connect() throws IOException {
         socket = new Socket(hostIp, port);
-        out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+        in  = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter   (new OutputStreamWriter(socket.getOutputStream()), true);
+
+        /* зарегистрируемся в «глобальном» контексте */
+        LocalMultiplayerContext.get().registerSession(this);
 
         /* HELLO */
         send(new NetMessage(NetMessageType.HELLO, Map.of("name", nickname)));
 
         start();
     }
+    public void disconnect(){ close(); }
 
-    public void disconnect() { close(); }
-    public void setLobbyController(LobbyController l) { this.lobbyController = l; }
-    public void attachGameController(GameController c){ this.controller      = c; }
-    public List<String> getConnectedPlayers() { return new ArrayList<>(playerNames); }
+    /* ========= DI ========= */
+    public void setLobbyController(LobbyController l){ this.lobby = l; }
+    public void injectSceneController(SceneController sc){ this.scene = sc; }
+    public void attachGameController(GameController g){
+        this.game = g;
+        g.setNetworkSession(this);
+    }
+    public List<String> getConnectedPlayers(){ return new ArrayList<>(players); }
 
-    /* ------------------- thread ------------------ */
-
-    @Override
-    public void run() {
-        try (BufferedReader in =
-                     new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
+    /* ================= main RX loop ================= */
+    @Override public void run() {
+        try {
             String line;
             while (running && (line = in.readLine()) != null) {
                 NetMessage msg = NetMessage.fromJson(line);
-
                 switch (msg.getType()) {
-
                     /* ---------- lobby ---------- */
                     case PLAYERS -> {
-                        // payload: { players : ["nick1","nick2",…] }
-                        List<?> list = msg.get("players");
-                        playerNames.clear();
-                        for (Object o : list) playerNames.add(String.valueOf(o));
+                        players.clear();
+                        ((List<?>) msg.get("players")).forEach(p -> players.add(String.valueOf(p)));
                     }
-
                     case START -> handleStart(msg);
 
                     /* ---------- game ----------- */
                     case PLACE_TOWER -> {
-                        if (controller == null) break;
-                        String tower = msg.get("tower");
-                        int    x     = (Integer) msg.get("x");
-                        int    y     = (Integer) msg.get("y");
-                        controller.placeTowerRemote(tower, x, y);
+                        if (game == null) break;
+                        game.placeTowerRemote(msg.get("tower"),
+                                (Integer) msg.get("x"), (Integer) msg.get("y"));
                     }
-
-                    default -> { /* игнорируем остальные */ }
+                    default -> {}
                 }
             }
-        } catch (IOException ignored) {
-        } finally { close(); }
+        } catch (IOException ignored) { }
+        finally { close(); }
     }
 
-    /* ---------------- handle START ---------------- */
-    private void handleStart(NetMessage msg) {
+    /* ================= START ================= */
+    private void handleStart(NetMessage msg){
         String map  = msg.get("map");
-        String data = msg.get("data");                 // base64-zip
-
+        String data = msg.get("data");
         try {
-            byte[] zipBytes = Base64.getDecoder().decode(data);
-            unpackZipToSd(zipBytes);
-
-            /* 👉 Сначала сообщаем лобби (если оно ещё на экране) */
-            if (lobbyController != null) {
-                lobbyController.onGameStartSignal(map);
-            } else if (sceneController != null) {
-                /* fallback – когда лобби уже закрыто/не установлено */
-                sceneController.startMultiplayerGame(Paths.get(map), /*isHost=*/false);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            unpackToSd(Base64.getDecoder().decode(data));
+            if (lobby != null) lobby.onGameStartSignal(map);
+            else if (scene != null)
+                scene.startMultiplayerGame(Paths.get(map), /*isHost=*/false);
+        } catch (IOException e){ e.printStackTrace(); }
     }
-
-    private void unpackZipToSd(byte[] zipBytes) throws IOException {
-        if (!Files.exists(USER_SD_DIR)) Files.createDirectories(USER_SD_DIR);
-        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
-            ZipEntry e;
-            while ((e = zis.getNextEntry()) != null) {
-                Path dst = USER_SD_DIR.resolve(e.getName());
+    private void unpackToSd(byte[] zip) throws IOException{
+        if(!Files.exists(SD_DIR)) Files.createDirectories(SD_DIR);
+        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zip))){
+            ZipEntry e; while((e=zis.getNextEntry())!=null){
+                Path dst = SD_DIR.resolve(e.getName());
                 Files.createDirectories(dst.getParent());
-                try (OutputStream out = Files.newOutputStream(dst,
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING)) {
-                    zis.transferTo(out);
+                try(OutputStream o = Files.newOutputStream(dst,
+                        StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING)){
+                    zis.transferTo(o);
                 }
             }
         }
     }
 
-    /* -------------- NetworkSession --------------- */
-
-    @Override
-    public void sendPlaceTower(String towerName, int x, int y) {
+    /* ================= NetworkSession ================= */
+    @Override public void sendPlaceTower(String tower,int x,int y){
         send(new NetMessage(NetMessageType.PLACE_TOWER,
-                Map.of("tower", towerName, "x", x, "y", y)));
+                Map.of("tower",tower,"x",x,"y",y)));
     }
+    private void send(NetMessage m){ if(out!=null) out.println(m.toJson()); }
 
-    private void send(NetMessage msg) {
-        if (out != null) out.println(msg.toJson());
-    }
+    @Override public boolean isConnected(){ return socket!=null && socket.isConnected();}
+    @Override public boolean isHost(){ return false; }
 
-    @Override public boolean isConnected() { return socket != null && socket.isConnected() && !socket.isClosed(); }
-    @Override public boolean isHost()      { return false; }
-
-    @Override
-    public void close() {
-        running = false;
-        try { if (socket != null) socket.close(); } catch (IOException ignored) {}
+    /* ================= cleanup ================= */
+    @Override public void close(){
+        running=false;
+        try{if(socket!=null)socket.close();}catch(IOException ignored){}
     }
 }
