@@ -17,4 +17,7 @@ public interface NetworkSession {
 
     /** Корректно завершить соединение. */
     void close();
+
+//    void sendUpgradeTower(int x, int y);
+    void sendSellTower(int x, int y);
 }

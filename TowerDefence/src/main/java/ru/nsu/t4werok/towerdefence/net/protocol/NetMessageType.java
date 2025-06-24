@@ -12,9 +12,9 @@ public enum NetMessageType {
     READY,
     CANCEL_READY,
     START,            // запуск игры + zip-blob ресурсов
-    PLACE_TOWER,
-    UPGRADE_TOWER,
-    SELL_TOWER,
+    PLACE_TOWER,      // сигнал для отображения башни у всех игроков
+    UPGRADE_TOWER,    // сигнал для улучшения башни
+    SELL_TOWER,       // сигнал для продажи башни
     WAVE_SPAWN,
     PLAYER_STATS,
     PING,
