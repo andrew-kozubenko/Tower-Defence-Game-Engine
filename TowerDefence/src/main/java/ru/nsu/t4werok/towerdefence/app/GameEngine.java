@@ -89,6 +89,11 @@ public class GameEngine {
         this.sceneController = sc;
         this.base            = base;
 
+        /* ----------- сеть ----------- */
+        session = LocalMultiplayerContext.get().getSession();
+        iAmHost = session!=null && session.isHost();
+        if(iAmHost) srv = (MultiplayerServer) session;
+
         /* ----------- UI / контроллеры ----------- */
         this.gameController  = new GameController(this, sc, gameMap, towers);
         this.gameView        = new GameView(gameController, this);
@@ -108,10 +113,7 @@ public class GameEngine {
             throw new RuntimeException("Can't load configs", e);
         }
 
-        /* ----------- сеть ----------- */
-        session = LocalMultiplayerContext.get().getSession();
-        iAmHost = session!=null && session.isHost();
-        if(iAmHost) srv = (MultiplayerServer) session;
+
 
         /* ----------- WaveController с коллбэком для хоста ----------- */
         waveController = new WaveController(
@@ -128,6 +130,10 @@ public class GameEngine {
         prevBaseHp = base.getHealth();
 
         start();
+    }
+
+    public boolean isiAmHost() {
+        return iAmHost;
     }
 
     public GameController getGameController() {
@@ -158,6 +164,7 @@ public class GameEngine {
     public void stop() {
         running = false;
         gameView.deleteButtonNextWave();
+        gameView.showGameOverOverlay();
     }
 
     /* =================== ОБНОВЛЕНИЕ =================== */
@@ -200,6 +207,8 @@ public class GameEngine {
         gameController.updateTower(enemies);
 
         if (base.getHealth() <= 0) { stop(); System.out.println("Game Over!"); }
+        gameView.update(this);
+
     }
 
     private void render() {
@@ -297,5 +306,13 @@ public class GameEngine {
             default -> {
             }
         }
+    }
+
+    public boolean isWaveInProgress() {
+        return waveController.isActive();
+    }
+
+    public NetworkSession getSession() {
+        return session;
     }
 }
