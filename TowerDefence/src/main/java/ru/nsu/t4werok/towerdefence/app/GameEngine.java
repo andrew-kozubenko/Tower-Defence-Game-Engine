@@ -135,6 +135,15 @@ public class GameEngine {
     public void start() {
         running = true;
         settingsManager.setRunningGame(true);
+
+        /* если мы ХОСТ — сразу же анонсируем клиентам старт ПЕРВОЙ волны,
+       а себе делаем forceStart(0,seed); до этого волна была «заморожена» */
+        if (iAmHost && session instanceof MultiplayerServer srv){
+            long seed = new Random().nextLong();
+            srv.sendWaveStart(0, seed);          // ➜ клиенты
+            waveController.forceStart(0, seed);  // ➜ локально хосту
+        }
+
         System.out.println("Start");
 
         // Игровой цикл
