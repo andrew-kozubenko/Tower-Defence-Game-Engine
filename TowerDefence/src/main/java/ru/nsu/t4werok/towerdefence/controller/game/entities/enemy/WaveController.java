@@ -6,147 +6,183 @@ import ru.nsu.t4werok.towerdefence.config.game.entities.enemy.WavesConfig;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 
 import java.util.List;
+import java.util.Random;
 
+/**
+ * Управляет логикой волн и — если мы хост — информирует коллбэком о каждом
+ * заспавненном враге.
+ */
 public class WaveController {
+
     private final EnemiesConfig enemiesConfig;
-    private final WavesConfig wavesConfig;
-    private final int allPaths;         // Количество возможных путей для спавна врагов
+    private final WavesConfig   wavesConfig;
+    private final int           allPaths;
 
-    private int numberOfWave = 0;       // Индекс текущей волны
-    private int numberOfEnemy = 0;      // Счётчик врагов внутри текущей волны
-    private int numberOfTicks = 0;      // Счётчик «тиков» между спавнами
-    private int numberOfPath = 0;       // Индекс пути, по которому пойдёт очередной враг
+    private int  numberOfWave  = -1;
+    private int  numberOfEnemy = 0;
+    private int  numberOfTicks = 0;
+    private int  numberOfPath  = 0;
 
-    private boolean stopped = false;    // Все волны пройдены/игра остановлена
-    private boolean waveActive = true;  // Текущая волна активна (идут спавны)
+    private boolean stopped     = false;
+    private boolean waveActive  = false;   // <-- первая волна ждёт сигнала!
+    private Random  rng         = new Random(0);
 
-    public WaveController(WavesConfig wavesConfig, EnemiesConfig enemiesConfig, int allPaths) {
-        this.wavesConfig = wavesConfig;
-        this.enemiesConfig = enemiesConfig;
-        this.allPaths = allPaths;
+    /* коллбэк хоста */
+    private final SpawnCallback spawnCallback;
+
+    public WaveController(WavesConfig wavesCfg,
+                          EnemiesConfig enemiesCfg,
+                          int allPaths,
+                          SpawnCallback cb) {
+        this.wavesConfig     = wavesCfg;
+        this.enemiesConfig   = enemiesCfg;
+        this.allPaths        = allPaths;
+        this.spawnCallback   = cb;
     }
 
-    /**
-     * Основной метод, вызываемый каждый кадр/тик.
-     * Проверяет, нужно ли заспавнить врага, и следит за окончанием волны.
-     *
-     * @param enemies     список врагов на карте
-     * @param spawnPoint  координаты спавна (в тайловых координатах)
-     * @param cellSizeX   ширина клетки
-     * @param cellSizeY   высота клетки
-     * @return true, если игра продолжается, false если все волны закончились (или остановлены).
-     */
-    public boolean updateWave(List<Enemy> enemies, Integer[] spawnPoint, int cellSizeX, int cellSizeY) {
-        if (stopped) {
-            // Все волны закончились или игра остановлена
-            return false;
-        }
+    public int  getCurrentWaveIndex() { return numberOfWave; }
 
-        // Если текущая волна не активна (т.е. закончилась), но ещё не вызван nextWave()
-        if (!waveActive) {
-            return true; // игра продолжается, но без спавна врагов
-        }
+    /* ------------------------------------------------------------------ */
+    /*                    ОБНОВЛЕНИЕ (одиночка/клиент)                    */
+    /* ------------------------------------------------------------------ */
+    public boolean updateWave(List<Enemy> enemies,
+                              Integer[] spawnPoint,
+                              int cellSizeX, int cellSizeY) {
 
-        // Увеличиваем счётчик тиков
+        if (stopped || !waveActive) return !stopped;
+
         numberOfTicks++;
 
-        // Когда счётчик тиков достиг нужного интервала, спавним врага
         int interval = wavesConfig.getWaves()[numberOfWave].getInterval();
         if (numberOfTicks >= interval) {
             numberOfTicks = 0;
-
-            // Спавним врага
             spawnEnemy(enemies, spawnPoint, cellSizeX, cellSizeY);
-
-            // Увеличиваем счётчик врагов этой волны
             numberOfEnemy++;
 
-            // Если заспавнили всех врагов текущей волны
             if (numberOfEnemy >= wavesConfig.getWaves()[numberOfWave].getEnemies().length) {
-                // Волна закончена
                 waveActive = false;
-                System.out.println("Wave " + (numberOfWave + 1) + " completed. Waiting for nextWave() call...");
-
-                // Если это была последняя волна - останавливаемся
-                if (numberOfWave >= wavesConfig.getWaves().length - 1) {
-                    stopped = true;
-                    System.out.println("All waves completed");
-                    return false;
-                }
+                if (numberOfWave >= wavesConfig.getWaves().length - 1) stopped = true;
             }
         }
-        // Волна ещё в процессе, игра продолжается
         return true;
     }
 
+    /* ------------------------------------------------------------------ */
+    /*                       ОБНОВЛЕНИЕ ДЛЯ ХОСТА                         */
+    /* ------------------------------------------------------------------ */
+    public boolean updateWaveHost(List<Enemy> enemies,
+                                  Integer[] spawnPoint,
+                                  int cellSizeX, int cellSizeY) {
+
+        int before = enemies.size();
+        boolean cont = updateWave(enemies, spawnPoint, cellSizeX, cellSizeY);
+
+        /* если появился новый враг — шлём коллбэку */
+        if (spawnCallback != null && enemies.size() > before) {
+            Enemy e = enemies.get(enemies.size() - 1);
+            spawnCallback.onSpawn(numberOfWave, numberOfEnemy - 1, e.getCurrentPathIndex());
+        }
+        return cont;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*                       СТАРТ/ФОРС-СТАРТ ВОЛНЫ                       */
+    /* ------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------ */
+    /*                ЛОКАЛЬНЫЙ СТАРТ (single-player / клиент)            */
+    /* ------------------------------------------------------------------ */
+
     /**
-     * Запускает следующую волну, если предыдущая закончена.
+     * Запустить следующую волну локально (без синхронизации по сети).
+     * Используется:
+     *   • одиночная игра;
+     *   • клиент, если игра без подключённого хоста.
      *
-     * @return true, если волна успешно запущена,
-     *         false, если волн больше нет или текущая ещё не закончилась.
+     * @return true – если волна стартовала, false – если нельзя.
      */
     public boolean nextWave() {
-        if (stopped) {
-            // Все волны уже закончились
-            System.out.println("No more waves to start. The game is over or all waves are done.");
-            return false;
-        }
-        if (waveActive) {
-            // Текущая волна ещё не закончилась
-            System.out.println("Cannot start next wave — wave " + (numberOfWave + 1) + " is still active.");
-            return false;
-        }
-
-        // Переходим к следующей волне
-        numberOfWave++;
-        if (numberOfWave >= wavesConfig.getWaves().length) {
-            // На всякий случай проверим, вдруг вышли за предел
-            stopped = true;
-            System.out.println("No more waves available. Game ended.");
-            return false;
-        }
-
-        // Сбрасываем счётчики для новой волны
-        numberOfEnemy = 0;
-        numberOfTicks = 0;
-        waveActive = true;
-
-        System.out.println("Wave " + (numberOfWave + 1) + " started.");
-        return true;
+        return internalStartNextWave(false) >= 0;
     }
 
-    /**
-     * Спавнит нового врага (Enemy) и добавляет его в список.
-     */
-    private void spawnEnemy(List<Enemy> enemies, Integer[] spawnPoint, int cellSizeX, int cellSizeY) {
-        // Смотрим, какого врага спавнить (ID из массива волны - 1)
-        int enemyId = wavesConfig.getWaves()[numberOfWave].getEnemies()[numberOfEnemy] - 1;
+    /* ------------------------------------------------------------------ */
+    /*                       ХОСТОВСКИЙ СТАРТ ВОЛНЫ                       */
+    /* ------------------------------------------------------------------ */
+    public int nextWaveHost() {
+        return internalStartNextWave(true);          // true → вернём индекс
+    }
 
-        EnemyConfig enemyConfig = enemiesConfig.getEnemiesConfigs()[enemyId];
+    /* ------------------------------------------------------------------ */
+    /*                   ОБЩАЯ РЕАЛИЗАЦИЯ ПЕРЕКЛЮЧЕНИЯ                     */
+    /* ------------------------------------------------------------------ */
+    private int internalStartNextWave(boolean returnIdx) {
 
-        // Запоминаем текущий индекс пути, чтобы вывести в логи
-        int currentPathIndex = numberOfPath;
+        if (waveActive || stopped) return returnIdx ? -1 :  false?1:-1; // -1 / false
 
-        // Создаём врага
-        Enemy enemy = new Enemy(
-                enemyConfig.getLifePoints(),
-                enemyConfig.getSpeed(),
-                enemyConfig.getDamageToBase(),
-                enemyConfig.getLoot(),
+        numberOfWave++;
+        if (numberOfWave >= wavesConfig.getWaves().length) { stopped = true; return returnIdx ? -1 : false?1:-1; }
+
+        numberOfEnemy = numberOfTicks = numberOfPath = 0;
+        waveActive    = true;
+        return returnIdx ? numberOfWave : 0;  // 0 значит «ok» для boolean-ветки
+    }
+
+    public void forceStart(int idx, long seed) {
+        if (idx < 0 || idx >= wavesConfig.getWaves().length) return;
+
+        numberOfWave  = idx;
+        numberOfEnemy = numberOfTicks = numberOfPath = 0;
+        waveActive    = true;
+        stopped       = false;
+        rng           = new Random(seed);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*                         КЛИЕНТСКИЙ SPAWN                           */
+    /* ------------------------------------------------------------------ */
+    public void remoteSpawn(int waveIdx, int enemyIdx, int pathIdx,
+                            List<Enemy> enemies,
+                            Integer[] spawnPoint,
+                            int cellSizeX, int cellSizeY) {
+
+        if (waveIdx != numberOfWave || enemyIdx != numberOfEnemy) return;
+
+        numberOfPath = (pathIdx + 1) % allPaths;
+
+        int id = wavesConfig.getWaves()[waveIdx].getEnemies()[enemyIdx] - 1;
+        EnemyConfig cfg = enemiesConfig.getEnemiesConfigs()[id];
+
+        enemies.add(new Enemy(cfg.getLifePoints(), cfg.getSpeed(),
+                cfg.getDamageToBase(), cfg.getLoot(),
                 spawnPoint[0] * cellSizeX,
                 spawnPoint[1] * cellSizeY,
-                currentPathIndex
-        );
+                pathIdx));
 
-        // Инкрементируем pathIndex (чтобы следующий враг шёл по другому пути)
-        numberOfPath++;
-        if (numberOfPath >= allPaths) {
-            numberOfPath = 0;
-        }
+        numberOfEnemy++;
+        if (numberOfEnemy >= wavesConfig.getWaves()[waveIdx].getEnemies().length)
+            waveActive = false;
+    }
 
-        enemies.add(enemy);
-        System.out.println("Spawned enemy: Wave " + (numberOfWave + 1)
-                + ", Enemy " + (numberOfEnemy + 1)
-                + ", Path " + currentPathIndex);
+    /* ------------------------------------------------------------------ */
+    /*                         PRIVATE HELPERS                            */
+    /* ------------------------------------------------------------------ */
+    private void spawnEnemy(List<Enemy> enemies,
+                            Integer[] spawnPoint,
+                            int cellSizeX, int cellSizeY) {
+
+        int id = wavesConfig.getWaves()[numberOfWave].getEnemies()[numberOfEnemy] - 1;
+        EnemyConfig cfg = enemiesConfig.getEnemiesConfigs()[id];
+
+        enemies.add(new Enemy(cfg.getLifePoints(), cfg.getSpeed(),
+                cfg.getDamageToBase(), cfg.getLoot(),
+                spawnPoint[0] * cellSizeX,
+                spawnPoint[1] * cellSizeY,
+                numberOfPath));
+
+        numberOfPath = (numberOfPath + 1) % allPaths;
+    }
+
+    /* ------------------------------------------------------------------ */
+    public interface SpawnCallback {
+        void onSpawn(int waveIdx, int enemyIdx, int pathIdx);
     }
 }

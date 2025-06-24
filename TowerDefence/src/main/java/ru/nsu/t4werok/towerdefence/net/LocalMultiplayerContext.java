@@ -19,7 +19,14 @@ public final class LocalMultiplayerContext {
 
     /* ---------- привязки ---------- */
     public void bindEngine(GameEngine e){ this.engine = e; }
-    public void registerSession(NetworkSession s){ this.session = s; }
+    public void registerSession(NetworkSession s){
+        // не перезаписывать, если уже установлен сервер
+        if (this.session instanceof MultiplayerServer && !(s instanceof MultiplayerServer)) {
+            return;
+        }
+        this.session = s;
+    }
+
     public NetworkSession getSession(){ return session; }
 
     /* ---------- входящие NetMessage ---------- */

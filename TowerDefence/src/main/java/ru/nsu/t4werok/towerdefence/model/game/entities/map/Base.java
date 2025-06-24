@@ -31,6 +31,10 @@ public class Base {
         return health;
     }
 
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
     public void takeDamage(int damage) {
         health = Math.max(0, health - damage);
     }

@@ -95,6 +95,11 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                                 (Integer) msg.get("x"), (Integer) msg.get("y"));
                     }
 
+                    /* ---------- waves ---------- */
+                    case WAVE_SYNC, STATE_SYNC -> {
+                        /* сразу отдаём движку */
+                        LocalMultiplayerContext.get().dispatch(msg);
+
 //                    case UPGRADE_TOWER -> {
 //                        if (game == null) break;
 //                        game.upgradeTowerRemote((Integer) msg.get("x"), (Integer) msg.get("y"));
@@ -142,10 +147,14 @@ public class MultiplayerClient extends Thread implements NetworkSession {
         send(new NetMessage(NetMessageType.PLACE_TOWER,
                 Map.of("tower",tower,"x",x,"y",y)));
     }
+
+    public void requestNextWave(){ send(new NetMessage(NetMessageType.WAVE_REQ,Map.of())); }
+
     private void send(NetMessage m){ if(out!=null) out.println(m.toJson()); }
 
     @Override public boolean isConnected(){ return socket!=null && socket.isConnected();}
     @Override public boolean isHost(){ return false; }
+
 
     /* ================= cleanup ================= */
     @Override public void close(){

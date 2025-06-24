@@ -19,6 +19,9 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.net.LocalMultiplayerContext;
+import ru.nsu.t4werok.towerdefence.net.MultiplayerClient;
+import ru.nsu.t4werok.towerdefence.net.MultiplayerServer;
+import ru.nsu.t4werok.towerdefence.net.NetworkSession;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 import ru.nsu.t4werok.towerdefence.utils.ResourceManager;
@@ -32,83 +35,100 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import static ru.nsu.t4werok.towerdefence.utils.EnemiesLoader.loadEnemiesConfig;
 import static ru.nsu.t4werok.towerdefence.utils.WavesLoader.loadWavesConfig;
 
 public class GameEngine {
-    private final GameMap gameMap; // Карта, на которой происходит игра
-    private boolean running = false; // Флаг состояния игры
-    private AnimationTimer gameLoop; // Игровой цикл
-    private final List<Enemy> enemies = new ArrayList<>(); // Список врагов
-    private final List<Tower> towers = new ArrayList<>(); // Список башен на карте
+    /* =================== постоянные объекты =================== */
+    private final GameMap            gameMap;
+    private final SceneController    sceneController;
+    private final SettingsManager    settingsManager = SettingsManager.getInstance();
 
-    private int waveNumber = 0; // Номер текущей волны
+    /* ---------- отрисовка ---------- */
+    private final GameController  gameController;
+    private final GameView        gameView;
+    private final AllEnemiesView  allEnemiesView;
+    private final TowerView       towerView;
 
-    private static final double TARGET_FPS = 30.0; // Целевая частота кадров
-    private static final double TARGET_TIME_PER_FRAME = 1_000_000_000.0 / TARGET_FPS; // Время на один кадр (в наносекундах)
-
-    private long lastUpdateTime = 0; // Время последнего обновления
-
-    private final GameController gameController;
-    private final GameView gameView;
-    private final AllEnemiesView allEnemiesView;
-    private final SceneController sceneController;
-    private final TowerView towerView;
-    private final SettingsManager settingsManager = SettingsManager.getInstance();
-
+    /* ---------- данные игры ---------- */
+    private final List<Enemy> enemies = new ArrayList<>();
+    private final List<Tower> towers  = new ArrayList<>();
     private final EnemiesConfig enemiesConfig;
-    private final WavesConfig wavesConfig;
+    private final WavesConfig   wavesConfig;
     private final WaveController waveController;
+    private final Base           base;
 
-    private Base base; // База
+    /* ---------- сеть ---------- */
+    private final NetworkSession session;      // может быть null, если игра одиночная
+    private final boolean        iAmHost;      // true – если session instanceof MultiplayerServer
 
-    public GameEngine(GameMap gameMap, SceneController sceneController, Base base) {
-        this.gameMap = gameMap;
-        this.sceneController = sceneController;
-        this.base = base; // Передаем базу
+    /* ---------- сервисные поля ---------- */
+    private static final double TARGET_FPS           = 30.0;
+    private static final double TARGET_TIME_PER_FRAME= 1_000_000_000.0 / TARGET_FPS;
 
-        // Подготавливаем контроллеры
-        this.gameController = new GameController(this, sceneController, gameMap, towers);
-        this.gameView = new GameView(gameController, this);
-        // Добавляем игровую сцену в SceneController
-        sceneController.addScene("Game", gameView.getScene());
-        // Переключаемся на игровую сцену
-        sceneController.switchTo("Game");
-        allEnemiesView = new AllEnemiesView();
-        towerView = new TowerView(gameController, gameView.getGc(), gameView.getCanvas(), gameMap);
+    private boolean        running       = false;
+    private AnimationTimer gameLoop;
+    private long           lastUpdateTime= 0;
+    private int            prevBaseHp;          // для отправки BASE_HP только при изменении
 
-        // Формируем путь к стандартной папке: Documents/Games/TowerDefenceSD
-        Path baseConfigPath = Paths.get(System.getProperty("user.home"), "Documents", "Games", "TowerDefenceSD");
+    /* -------- новые константы и поля -------- */
+    private static final int  SYNC_EVERY_TICKS = 15;          // хост → клиенты
+    private int  tickCounter = 0;                             // NEW
+    private MultiplayerServer srv;                            // NEW
 
-        // Убедимся, что папка существует (если нужно также создавать при отсутствии)
-        try {
-            if (!Files.exists(baseConfigPath)) {
-                Files.createDirectories(baseConfigPath);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Не удалось создать директории для конфигураций: " + e.getMessage());
-        }
+    /* ==========================================================
+                              КОНСТРУКТОР
+       ========================================================== */
+    public GameEngine(GameMap gameMap, SceneController sc, Base base) {
 
-        // Путь к файлам с конфигурациями
+        /* ----------- базовые ссылки ----------- */
+        this.gameMap         = gameMap;
+        this.sceneController = sc;
+        this.base            = base;
+
+        /* ----------- UI / контроллеры ----------- */
+        this.gameController  = new GameController(this, sc, gameMap, towers);
+        this.gameView        = new GameView(gameController, this);
+        allEnemiesView       = new AllEnemiesView();
+        towerView            = new TowerView(gameController,
+                gameView.getGc(),
+                gameView.getCanvas(),
+                gameMap);
+
+        /* ----------- ресурсы ----------- */
         Path enemiesPath = ResourceManager.getEnemiesConfigFile();
         Path wavesPath   = ResourceManager.getWavesConfigFile();
-
         try {
-            this.enemiesConfig = loadEnemiesConfig(enemiesPath.toString());
+            enemiesConfig = loadEnemiesConfig(enemiesPath.toString());
+            wavesConfig   = loadWavesConfig  (wavesPath.toString());
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка загрузки enemies.json: " + e.getMessage(), e);
+            throw new RuntimeException("Can't load configs", e);
         }
 
-        try {
-            this.wavesConfig = loadWavesConfig(wavesPath.toString());
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка загрузки waves.json: " + e.getMessage(), e);
-        }
+        /* ----------- сеть ----------- */
+        session = LocalMultiplayerContext.get().getSession();
+        iAmHost = session!=null && session.isHost();
+        System.out.println(iAmHost);
+        if(iAmHost) srv = (MultiplayerServer) session;
 
-        waveController = new WaveController(wavesConfig, enemiesConfig, gameMap.getEnemyPaths().size());
+        /* ----------- WaveController с коллбэком для хоста ----------- */
+        waveController = new WaveController(
+                wavesConfig,
+                enemiesConfig,
+                gameMap.getEnemyPaths().size(),
+                null);
+
+        /* ----------- сцена ---------- */
+        sc.addScene("Game", gameView.getScene());
+        sc.switchTo("Game");
 
         LocalMultiplayerContext.get().bindEngine(this);
+        prevBaseHp = base.getHealth();
+
+        start();
     }
 
     public GameController getGameController() {
@@ -122,25 +142,14 @@ public class GameEngine {
     public void start() {
         running = true;
         settingsManager.setRunningGame(true);
-        System.out.println("Start");
 
-        // Игровой цикл
         gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (!running) {
-                    settingsManager.setRunningGame(false);
-                    stop();
-                    return;
-                }
-
-                // Ограничение частоты обновлений
-                long deltaTime = now - lastUpdateTime;
-                if (deltaTime >= TARGET_TIME_PER_FRAME) {
-                    System.out.println("hi");
-                    lastUpdateTime = now; // Обновляем время последнего обновления
-                    update(); // Обновление состояния игры
-                    render(); // Отрисовка объектов
+            @Override public void handle(long now){
+                if(!running){ settingsManager.setRunningGame(false); stop(); return; }
+                if(now-lastUpdateTime >= TARGET_TIME_PER_FRAME){
+                    lastUpdateTime = now;
+                    update();
+                    render();
                 }
             }
         };
@@ -152,36 +161,46 @@ public class GameEngine {
         gameView.deleteButtonNextWave();
     }
 
+    /* =================== ОБНОВЛЕНИЕ =================== */
     public void update() {
-        if (!running) return;
 
-        // Обновляем текущую волну. Если волны кончились и врагов нет - останавливаем игру.
-        if (!waveController.updateWave(enemies, gameMap.getSpawnPoint(),
-                800 / gameMap.getWidth(), 600 / gameMap.getHeight()) && enemies.isEmpty()) {
-            stop();
-            return;
+        /* --------- обновление волн --------- */
+        boolean cont;
+        if (iAmHost) {
+            cont = waveController.updateWaveHost(enemies,
+                    gameMap.getSpawnPoint(),
+                    800 / gameMap.getWidth(),
+                    600 / gameMap.getHeight());
+        } else {
+            cont = waveController.updateWave(enemies,
+                    gameMap.getSpawnPoint(),
+                    800 / gameMap.getWidth(),
+                    600 / gameMap.getHeight());
         }
+        if (!cont && enemies.isEmpty()) { stop(); return; }
 
-        // Обновление врагов
+        /* --------- движение врагов и урон базе --------- */
         for (int i = 0; i < enemies.size(); i++) {
-            Enemy enemy = enemies.get(i);
-            enemy.move(gameMap); // Двигаем врагов по пути
-            if (enemy.isDead()) {
-                if (base != null) {
-                    base.takeDamage(enemy.getDamageToBase()); // Наносим урон базе, если враг достиг её
-                    enemies.remove(enemy);
-                }
+            Enemy e = enemies.get(i);
+            e.move(gameMap);
+            if (e.isDead()) {
+                base.takeDamage(e.getDamageToBase());
+                enemies.remove(i--);
             }
         }
 
-        // Обновление башен
+        /* ---------- синхронизация HP базы ---------- */
+        if(iAmHost){
+            if(++tickCounter>=SYNC_EVERY_TICKS){
+                tickCounter=0;
+                srv.sendStateSync(base.getHealth(),enemies,waveController.getCurrentWaveIndex());
+            }
+        }
+
+        /* ---------- башни ---------- */
         gameController.updateTower(enemies);
 
-        // Проверка поражения
-        if (base.getHealth() <= 0) {
-            stop();
-            System.out.println("Game Over!");
-        }
+        if (base.getHealth() <= 0) { stop(); System.out.println("Game Over!"); }
     }
 
     private void render() {
@@ -189,7 +208,6 @@ public class GameEngine {
         Canvas canvas = gameView.getCanvas();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        System.out.println("Hello");
         gameView.getMapView().renderMap();
         for (Tower tower : towers) {
             towerView.renderTower(tower);
@@ -221,19 +239,62 @@ public class GameEngine {
         gc.fillText(coinsText, rectX + 10, rectY + 25);
     }
 
+    /**
+     * Кнопка Next-Wave на стороне хоста.
+     * Клиентам эту кнопку нажимать не нужно — они получат WAVE_START.
+     */
     public boolean nextWave() {
-        return waveController.nextWave();
+        if (session == null) {
+            // Одиночная игра
+            return waveController.nextWave();
+        }
+
+        if (iAmHost) {
+            int idx = waveController.nextWaveHost();
+            if (idx < 0) return false;
+            long seed = new Random().nextLong();
+            srv.sendWaveSync(idx, seed);
+            return true;
+        }
+
+        // Клиент: отправляем запрос хосту
+        if (session instanceof MultiplayerClient cli) {
+            cli.requestNextWave();
+        }
+        return false;
     }
 
-    /* =====================================================================
-       Приём сетевых сообщений
-       ===================================================================== */
-    public void handleNetworkMessage(NetMessage msg){
-        if (msg.getType() == NetMessageType.PLACE_TOWER){
-            String tower = msg.get("tower");
-            int    x     = (Integer) msg.get("x");
-            int    y     = (Integer) msg.get("y");
-            gameController.placeTowerRemote(tower, x, y);
+
+    /* ==========================================================
+                        ОБРАБОТКА СЕТИ
+       ========================================================== */
+    /* =================== ОБРАБОТКА СЕТИ =================== */
+    public void handleNetworkMessage(NetMessage msg) {
+        switch (msg.getType()) {
+
+            case PLACE_TOWER -> gameController.placeTowerRemote(
+                    msg.get("tower"), (Integer) msg.get("x"), (Integer) msg.get("y"));
+
+            case WAVE_SYNC -> {
+                if(!running) start();
+                waveController.forceStart(msg.get("idx"),((Number)msg.get("seed")).longValue());
+            }
+            case STATE_SYNC -> {
+//                /* полная замена списка врагов и HP (клиент) */
+//                base.setHealth((Integer) msg.get("hp"));
+//                enemies.clear();
+//                List<?> arr = msg.get("data");
+//                for(Object o:arr){
+//                    Map<?,?> m=(Map<?,?>)o;
+//                    enemies.add(new Enemy(
+//                            (Integer)m.get("hp"),0,0,0,
+//                            (Integer)m.get("x"),(Integer)m.get("y"),
+//                            (Integer)m.get("path")));
+//                }
+            }
+
+            default -> {
+            }
         }
         else if (msg.getType() == NetMessageType.SELL_TOWER) {
             int x = ((Integer) msg.get("x"));

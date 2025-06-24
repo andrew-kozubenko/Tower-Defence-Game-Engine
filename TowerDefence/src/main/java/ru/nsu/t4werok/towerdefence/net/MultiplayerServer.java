@@ -2,6 +2,7 @@ package ru.nsu.t4werok.towerdefence.net;
 
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
+import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 
@@ -11,6 +12,7 @@ import java.net.Socket;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,6 +34,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
     private final ServerSocket serverSocket;
     private final List<ClientHandler> clients = new CopyOnWriteArrayList<>();
     private final List<String>        names   = new CopyOnWriteArrayList<>();
+    private final AtomicLong             towerIds = new AtomicLong(1);   // уникальные id башен
     private volatile boolean running = true;
 
     /* ---------------- ctor ---------------- */
@@ -76,6 +79,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
 
     /* ================= NetworkSession ================= */
     @Override public void sendPlaceTower(String tower,int x,int y){
+        long id = towerIds.getAndIncrement();
         /* локально для хоста */
         LocalMultiplayerContext.get().dispatch(
                 new NetMessage(NetMessageType.PLACE_TOWER,
@@ -85,6 +89,21 @@ public class MultiplayerServer extends Thread implements NetworkSession {
         broadcast(new NetMessage(NetMessageType.PLACE_TOWER,
                 Map.of("tower",tower,"x",x,"y",y)));
     }
+
+
+    /* --- новые вспомогательные методы для волн --- */
+
+    public void sendWaveSync(int idx,long seed){
+        broadcast(new NetMessage(NetMessageType.WAVE_SYNC, Map.of("idx",idx,"seed",seed)));
+    }
+    public void sendStateSync(int hp, List<Enemy> enemies, int waveIdx){
+        var arr = enemies.stream().map(e ->
+                Map.of("x",e.getX(),"y",e.getY(),
+                        "path",e.getCurrentPathIndex(),
+                        "hp",e.getLifePoints())
+        ).toList();
+        broadcast(new NetMessage(NetMessageType.STATE_SYNC,
+                Map.of("hp",hp,"wave",waveIdx,"data",arr)));
 
     @Override
     public void sendSellTower(int x, int y) {
@@ -155,7 +174,9 @@ public class MultiplayerServer extends Thread implements NetworkSession {
         }
     }
 
-    /* ================= ClientHandler ================= */
+    /* =======================================================
+                          ClientHandler
+       ======================================================= */
     private class ClientHandler extends Thread{
         private final Socket sock;
         private final BufferedReader in;
@@ -181,6 +202,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
                             broadcast(msg);                  // всем остальным
                             LocalMultiplayerContext.get().dispatch(msg); // локально хосту
                         }
+                        case WAVE_REQ -> LocalMultiplayerContext.get().dispatch(msg);
                         default -> {}
                     }
                 }

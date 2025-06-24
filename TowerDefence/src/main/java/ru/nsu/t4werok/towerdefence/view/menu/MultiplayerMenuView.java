@@ -27,7 +27,7 @@ public class MultiplayerMenuView {
                 .addListener((obs, o, n) -> c.selectMap(n));
 
         /* ---------- HOST блок ---------- */
-        TextField hostPort   = new TextField("5555");
+        TextField hostPort   = new TextField("8080");
         TextField hostNick   = new TextField("Player");
         Button    hostBtn    = new Button("Create lobby");
         hostBtn.setOnAction(e ->
@@ -43,7 +43,7 @@ public class MultiplayerMenuView {
 
         /* ---------- JOIN блок ---------- */
         TextField joinIp     = new TextField("127.0.0.1");
-        TextField joinPort   = new TextField("5555");
+        TextField joinPort   = new TextField("8080");
         TextField joinNick   = new TextField("Player");
         Button    joinBtn    = new Button("Join");
         joinBtn.setOnAction(e ->
