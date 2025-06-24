@@ -122,6 +122,8 @@ public class GameEngine {
 
         LocalMultiplayerContext.get().bindEngine(this);
         prevBaseHp = base.getHealth();
+
+        start();
     }
 
     public GameController getGameController() {
@@ -136,18 +138,10 @@ public class GameEngine {
         running = true;
         settingsManager.setRunningGame(true);
 
-        /* хост рассылает старт первой волны */
-        if (iAmHost && session instanceof MultiplayerServer srv) {
-            long seed = new Random().nextLong();
-            srv.sendWaveStart(0, seed);
-            waveController.forceStart(0, seed);       // локально
-        }
-
         gameLoop = new AnimationTimer() {
-            @Override public void handle(long now) {
-                if (!running) { settingsManager.setRunningGame(false); stop(); return; }
-                System.out.println("Game loop started");
-                if (now - lastUpdateTime >= TARGET_TIME_PER_FRAME) {
+            @Override public void handle(long now){
+                if(!running){ settingsManager.setRunningGame(false); stop(); return; }
+                if(now-lastUpdateTime >= TARGET_TIME_PER_FRAME){
                     lastUpdateTime = now;
                     update();
                     render();
