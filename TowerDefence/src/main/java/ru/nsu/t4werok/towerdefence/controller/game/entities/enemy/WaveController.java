@@ -185,4 +185,9 @@ public class WaveController {
     public interface SpawnCallback {
         void onSpawn(int waveIdx, int enemyIdx, int pathIdx);
     }
+
+    public boolean isActive() {
+        return waveActive;
+    }
+
 }
