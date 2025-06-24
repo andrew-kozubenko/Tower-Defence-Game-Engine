@@ -130,12 +130,33 @@ public class GameController {
         // Добавляем монеты игроку
         playerState.addCoins((int) refund);
 
+        // отправка сообщения если мультиплеер
+        if (isMultiplayer()) {
+            networkSession.sendSellTower(tower.getX(), tower.getY());
+        }
         // Удаляем башню с карты
 //        gameMap.clearTowerAt(tower.getX(), tower.getY());
 
         // Обновляем интерфейс
 //        updateHUD();
         return true;
+    }
+
+
+    public synchronized void sellTowerRemote(int x, int y) {
+
+        if (towers == null) return;
+
+        // Найти башню по координатам
+        Optional<Tower> maybeTower = towers.stream()
+                .filter(tower -> tower.getX() == x && tower.getY() == y)
+                .findFirst();
+
+        // Удалить после стрима
+        maybeTower.ifPresent(tower -> {
+            towers.remove(tower);
+            towerController.removeTower(tower);  // удаляем
+        });
     }
 
 
@@ -222,4 +243,11 @@ public class GameController {
     }
 
     public int coinsNow() { return playerState.getCoins(); }
+
+
+//    public void upgradeTowerRemote(int x, int y) {
+//        // Найди башню по координатам и вызови логику улучшения
+//        gameMap.upgradeTowerAt(x, y);
+//    }
+
 }

@@ -7,7 +7,6 @@ package ru.nsu.t4werok.towerdefence.net.protocol;
  *     data: "<base64-zip-blob со всеми ресурсами>" }
  */
 public enum NetMessageType {
-
     /* lobby / handshake */
     HELLO, PLAYERS, READY, CANCEL_READY, START, DISCONNECT,
 
@@ -20,5 +19,6 @@ public enum NetMessageType {
     STATE_SYNC,    // хост   → все : полный снимок врагов + HP базы
 
     /* прочее */
-    PING
+    PING,
+    PLAYER_STATS
 }
