@@ -207,7 +207,6 @@ public class GameEngine {
         Canvas canvas = gameView.getCanvas();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        System.out.println("Hello");
         gameView.getMapView().renderMap();
         for (Tower tower : towers) {
             towerView.renderTower(tower);
@@ -244,6 +243,11 @@ public class GameEngine {
      * Клиентам эту кнопку нажимать не нужно — они получат WAVE_START.
      */
     public boolean nextWave(){
+        if (session == null) {
+            // Одиночная игра
+            return waveController.nextWave();
+        }
+
         if(iAmHost){
             int idx = waveController.nextWaveHost();
             if(idx<0) return false;
