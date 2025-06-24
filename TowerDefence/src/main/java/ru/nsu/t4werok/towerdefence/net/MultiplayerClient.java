@@ -96,14 +96,8 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                     }
 
                     /* ---------- waves ---------- */
-                    case WAVE_START -> {
-                        if (game == null) break;
-                        int  idx  = (Integer) msg.get("idx");
-                        long seed = ((Number) msg.get("seed")).longValue();
-                        LocalMultiplayerContext.get().dispatch(msg);   // двигатель сам разберёт
-                    }
-                    case ENEMY_SPAWN, BASE_HP -> {
-                        if (game == null) break;
+                    case WAVE_START, ENEMY_SPAWN, BASE_HP -> {
+                        /* сразу отдаём движку */
                         LocalMultiplayerContext.get().dispatch(msg);
                     }
 

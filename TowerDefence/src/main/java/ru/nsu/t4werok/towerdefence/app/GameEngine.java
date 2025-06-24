@@ -136,32 +136,21 @@ public class GameEngine {
         running = true;
         settingsManager.setRunningGame(true);
 
-        /* если мы ХОСТ — сразу же анонсируем клиентам старт ПЕРВОЙ волны,
-       а себе делаем forceStart(0,seed); до этого волна была «заморожена» */
-        if (iAmHost && session instanceof MultiplayerServer srv){
+        /* хост рассылает старт первой волны */
+        if (iAmHost && session instanceof MultiplayerServer srv) {
             long seed = new Random().nextLong();
-            srv.sendWaveStart(0, seed);          // ➜ клиенты
-            waveController.forceStart(0, seed);  // ➜ локально хосту
+            srv.sendWaveStart(0, seed);
+            waveController.forceStart(0, seed);       // локально
         }
 
-        System.out.println("Start");
-
-        // Игровой цикл
         gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (!running) {
-                    settingsManager.setRunningGame(false);
-                    stop();
-                    return;
-                }
-
-                // Ограничение частоты обновлений
-                long deltaTime = now - lastUpdateTime;
-                if (deltaTime >= TARGET_TIME_PER_FRAME) {
-                    lastUpdateTime = now; // Обновляем время последнего обновления
-                    update(); // Обновление состояния игры
-                    render(); // Отрисовка объектов
+            @Override public void handle(long now) {
+                if (!running) { settingsManager.setRunningGame(false); stop(); return; }
+                System.out.println("Game loop started");
+                if (now - lastUpdateTime >= TARGET_TIME_PER_FRAME) {
+                    lastUpdateTime = now;
+                    update();
+                    render();
                 }
             }
         };
@@ -173,36 +162,45 @@ public class GameEngine {
         gameView.deleteButtonNextWave();
     }
 
+    /* =================== ОБНОВЛЕНИЕ =================== */
     public void update() {
-        if (!running) return;
 
-        // Обновляем текущую волну. Если волны кончились и врагов нет - останавливаем игру.
-        if (!waveController.updateWave(enemies, gameMap.getSpawnPoint(),
-                800 / gameMap.getWidth(), 600 / gameMap.getHeight()) && enemies.isEmpty()) {
-            stop();
-            return;
+        /* --------- обновление волн --------- */
+        boolean cont;
+        if (iAmHost) {
+            cont = waveController.updateWaveHost(enemies,
+                    gameMap.getSpawnPoint(),
+                    800 / gameMap.getWidth(),
+                    600 / gameMap.getHeight());
+        } else {
+            cont = waveController.updateWave(enemies,
+                    gameMap.getSpawnPoint(),
+                    800 / gameMap.getWidth(),
+                    600 / gameMap.getHeight());
         }
+        if (!cont && enemies.isEmpty()) { stop(); return; }
 
-        // Обновление врагов
+        /* --------- движение врагов и урон базе --------- */
         for (int i = 0; i < enemies.size(); i++) {
-            Enemy enemy = enemies.get(i);
-            enemy.move(gameMap); // Двигаем врагов по пути
-            if (enemy.isDead()) {
-                if (base != null) {
-                    base.takeDamage(enemy.getDamageToBase()); // Наносим урон базе, если враг достиг её
-                    enemies.remove(enemy);
-                }
+            Enemy e = enemies.get(i);
+            e.move(gameMap);
+            if (e.isDead()) {
+                base.takeDamage(e.getDamageToBase());
+                enemies.remove(i--);
             }
         }
 
-        // Обновление башен
+        /* ---------- синхронизация HP базы ---------- */
+        if (iAmHost && base.getHealth() != prevBaseHp &&
+                session instanceof MultiplayerServer srv) {
+            prevBaseHp = base.getHealth();
+            srv.sendBaseHp(prevBaseHp);
+        }
+
+        /* ---------- башни ---------- */
         gameController.updateTower(enemies);
 
-        // Проверка поражения
-        if (base.getHealth() <= 0) {
-            stop();
-            System.out.println("Game Over!");
-        }
+        if (base.getHealth() <= 0) { stop(); System.out.println("Game Over!"); }
     }
 
     private void render() {
@@ -264,45 +262,37 @@ public class GameEngine {
     /* ==========================================================
                         ОБРАБОТКА СЕТИ
        ========================================================== */
-    public void handleNetworkMessage(NetMessage msg){
+    /* =================== ОБРАБОТКА СЕТИ =================== */
+    public void handleNetworkMessage(NetMessage msg) {
         switch (msg.getType()) {
 
-            /* ---------- башни ---------- */
-            case PLACE_TOWER -> {
-                gameController.placeTowerRemote(msg.get("tower"),
-                        (Integer)msg.get("x"),
-                        (Integer)msg.get("y"));
-            }
+            case PLACE_TOWER -> gameController.placeTowerRemote(
+                    msg.get("tower"), (Integer) msg.get("x"), (Integer) msg.get("y"));
 
-            /* ---------- старт волны ---------- */
             case WAVE_START -> {
-                int  idx  = (Integer) msg.get("idx");
+                /* если цикл ещё не запущен (клиент) — запустим */
+                if (!running) start();
+                int idx = (Integer) msg.get("idx");
                 long seed = ((Number) msg.get("seed")).longValue();
                 waveController.forceStart(idx, seed);
             }
 
-            /* ---------- появление конкретного врага ---------- */
-            case ENEMY_SPAWN -> {
-                int wi = (Integer) msg.get("wave");
-                int ei = (Integer) msg.get("enemy");
-                int pi = (Integer) msg.get("path");
+            case ENEMY_SPAWN -> waveController.remoteSpawn(
+                    (Integer) msg.get("wave"),
+                    (Integer) msg.get("enemy"),
+                    (Integer) msg.get("path"),
+                    enemies, gameMap.getSpawnPoint(),
+                    800 / gameMap.getWidth(),
+                    600 / gameMap.getHeight());
 
-                waveController.remoteSpawn(
-                        wi, ei, pi,
-                        enemies,
-                        gameMap.getSpawnPoint(),
-                        800 / gameMap.getWidth(),
-                        600 / gameMap.getHeight());
-            }
-
-            /* ---------- здоровье базы ---------- */
             case BASE_HP -> {
                 int hp = (Integer) msg.get("hp");
                 base.setHealth(hp);
                 prevBaseHp = hp;
             }
 
-            default -> {}
+            default -> {
+            }
         }
     }
 }
