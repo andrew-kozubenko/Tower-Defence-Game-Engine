@@ -12,10 +12,18 @@ public enum NetMessageType {
     READY,
     CANCEL_READY,
     START,            // запуск игры + zip-blob ресурсов
+
+    /* towers */
     PLACE_TOWER,
     UPGRADE_TOWER,
     SELL_TOWER,
-    WAVE_SPAWN,
+
+    /* waves / враги */
+    WAVE_START,         // {idx, seed}
+    ENEMY_SPAWN,        // {wave, idInWave, path}
+
+    BASE_HP,
+
     PLAYER_STATS,
     PING,
     DISCONNECT

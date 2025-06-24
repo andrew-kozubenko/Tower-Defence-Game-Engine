@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,6 +33,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
     private final ServerSocket serverSocket;
     private final List<ClientHandler> clients = new CopyOnWriteArrayList<>();
     private final List<String>        names   = new CopyOnWriteArrayList<>();
+    private final AtomicLong             towerIds = new AtomicLong(1);   // уникальные id башен
     private volatile boolean running = true;
 
     /* ---------------- ctor ---------------- */
@@ -76,6 +78,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
 
     /* ================= NetworkSession ================= */
     @Override public void sendPlaceTower(String tower,int x,int y){
+        long id = towerIds.getAndIncrement();
         /* локально для хоста */
         LocalMultiplayerContext.get().dispatch(
                 new NetMessage(NetMessageType.PLACE_TOWER,
@@ -85,6 +88,28 @@ public class MultiplayerServer extends Thread implements NetworkSession {
         broadcast(new NetMessage(NetMessageType.PLACE_TOWER,
                 Map.of("tower",tower,"x",x,"y",y)));
     }
+
+    /* --- новые вспомогательные методы для волн --- */
+
+    /** Хост вызвал nextWaveHost(...) в WaveController — сообщаем клиентам. */
+    public void sendWaveStart(int idx,long seed){
+        NetMessage m = new NetMessage(NetMessageType.WAVE_START,
+                Map.of("idx",idx,"seed",seed));
+        broadcast(m);
+    }
+    /** Хост заспавнил очередного врага — рассылаем. */
+    public void sendEnemySpawn(int wave,int enemy,int path){
+        NetMessage m = new NetMessage(NetMessageType.ENEMY_SPAWN,
+                Map.of("wave",wave,"enemy",enemy,"path",path));
+        broadcast(m);
+    }
+    /** Базе нанесли урон — синхронизируем HP. */
+    public void sendBaseHp(int hp){
+        NetMessage m = new NetMessage(NetMessageType.BASE_HP,
+                Map.of("hp",hp));
+        broadcast(m);
+    }
+
     @Override public boolean isConnected(){ return !serverSocket.isClosed(); }
     @Override public boolean isHost(){ return true; }
 
@@ -142,7 +167,9 @@ public class MultiplayerServer extends Thread implements NetworkSession {
         }
     }
 
-    /* ================= ClientHandler ================= */
+    /* =======================================================
+                          ClientHandler
+       ======================================================= */
     private class ClientHandler extends Thread{
         private final Socket sock;
         private final BufferedReader in;

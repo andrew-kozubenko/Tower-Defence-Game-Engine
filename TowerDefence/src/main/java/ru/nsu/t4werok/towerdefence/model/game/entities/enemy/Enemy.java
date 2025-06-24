@@ -41,6 +41,13 @@ public class Enemy {
     public void setDead(boolean isDead) { this.isDead = isDead; }
     public int getLoot() { return loot; }
 
+    public int getCurrentPathIndex() {
+        return currentPathIndex;
+    }
+
+    public void setCurrentPathIndex(int currentPathIndex) {
+        this.currentPathIndex = currentPathIndex;
+    }
 
     // Логика движения по пути
     public void move(GameMap map) {
