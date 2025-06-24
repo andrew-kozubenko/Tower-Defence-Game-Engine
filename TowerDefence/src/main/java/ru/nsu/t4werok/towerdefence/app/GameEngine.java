@@ -235,5 +235,10 @@ public class GameEngine {
             int    y     = (Integer) msg.get("y");
             gameController.placeTowerRemote(tower, x, y);
         }
+        else if (msg.getType() == NetMessageType.SELL_TOWER) {
+            int x = ((Integer) msg.get("x"));
+            int y = ((Integer) msg.get("y"));
+            gameController.sellTowerRemote(x, y);
+        }
     }
 }

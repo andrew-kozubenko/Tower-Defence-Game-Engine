@@ -94,6 +94,17 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                         game.placeTowerRemote(msg.get("tower"),
                                 (Integer) msg.get("x"), (Integer) msg.get("y"));
                     }
+
+//                    case UPGRADE_TOWER -> {
+//                        if (game == null) break;
+//                        game.upgradeTowerRemote((Integer) msg.get("x"), (Integer) msg.get("y"));
+//                    }
+
+                    case SELL_TOWER -> {
+                        if (game == null) break;
+                        game.sellTowerRemote((Integer) msg.get("x"), (Integer) msg.get("y"));
+                    }
+
                     default -> {}
                 }
             }
@@ -140,5 +151,17 @@ public class MultiplayerClient extends Thread implements NetworkSession {
     @Override public void close(){
         running=false;
         try{if(socket!=null)socket.close();}catch(IOException ignored){}
+    }
+
+//    @Override
+//    public void sendUpgradeTower(int x, int y) {
+//        send(new NetMessage(NetMessageType.UPGRADE_TOWER,
+//                Map.of("x", x, "y", y)));
+//    }
+
+    @Override
+    public void sendSellTower(int x, int y) {
+        send(new NetMessage(NetMessageType.SELL_TOWER,
+                Map.of("x", x, "y", y)));
     }
 }
