@@ -90,6 +90,17 @@ public class MultiplayerServer extends Thread implements NetworkSession {
                 Map.of("tower",tower,"x",x,"y",y)));
     }
 
+    @Override
+    public void sendSellTower(int x, int y) {
+        // Локальная обработка (для хоста)
+        LocalMultiplayerContext.get().dispatch(
+                new NetMessage(NetMessageType.SELL_TOWER,
+                        Map.of("x", x, "y", y)));
+
+        // Отправка всем клиентам
+        broadcast(new NetMessage(NetMessageType.SELL_TOWER,
+                Map.of("x", x, "y", y)));
+    }
 
     /* --- новые вспомогательные методы для волн --- */
 
@@ -104,17 +115,6 @@ public class MultiplayerServer extends Thread implements NetworkSession {
         ).toList();
         broadcast(new NetMessage(NetMessageType.STATE_SYNC,
                 Map.of("hp",hp,"wave",waveIdx,"data",arr)));
-
-    @Override
-    public void sendSellTower(int x, int y) {
-        // Локальная обработка (для хоста)
-        LocalMultiplayerContext.get().dispatch(
-                new NetMessage(NetMessageType.SELL_TOWER,
-                        Map.of("x", x, "y", y)));
-
-        // Отправка всем клиентам
-        broadcast(new NetMessage(NetMessageType.SELL_TOWER,
-                Map.of("x", x, "y", y)));
     }
 
     @Override public boolean isConnected(){ return !serverSocket.isClosed(); }

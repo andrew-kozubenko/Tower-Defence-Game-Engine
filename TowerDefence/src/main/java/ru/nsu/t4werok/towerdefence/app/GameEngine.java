@@ -111,7 +111,6 @@ public class GameEngine {
         /* ----------- сеть ----------- */
         session = LocalMultiplayerContext.get().getSession();
         iAmHost = session!=null && session.isHost();
-        System.out.println(iAmHost);
         if(iAmHost) srv = (MultiplayerServer) session;
 
         /* ----------- WaveController с коллбэком для хоста ----------- */
@@ -208,6 +207,7 @@ public class GameEngine {
         Canvas canvas = gameView.getCanvas();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
+        System.out.println("Hello");
         gameView.getMapView().renderMap();
         for (Tower tower : towers) {
             towerView.renderTower(tower);
@@ -243,27 +243,18 @@ public class GameEngine {
      * Кнопка Next-Wave на стороне хоста.
      * Клиентам эту кнопку нажимать не нужно — они получат WAVE_START.
      */
-    public boolean nextWave() {
-        if (session == null) {
-            // Одиночная игра
-            return waveController.nextWave();
-        }
-
-        if (iAmHost) {
+    public boolean nextWave(){
+        if(iAmHost){
             int idx = waveController.nextWaveHost();
-            if (idx < 0) return false;
-            long seed = new Random().nextLong();
-            srv.sendWaveSync(idx, seed);
+            if(idx<0) return false;
+            long seed=new Random().nextLong();
+            srv.sendWaveSync(idx,seed);
             return true;
         }
-
-        // Клиент: отправляем запрос хосту
-        if (session instanceof MultiplayerClient cli) {
-            cli.requestNextWave();
-        }
+        /* клиент – просто запрашиваем */
+        if(session instanceof MultiplayerClient cli) cli.requestNextWave();
         return false;
     }
-
 
     /* ==========================================================
                         ОБРАБОТКА СЕТИ
@@ -293,13 +284,14 @@ public class GameEngine {
 //                }
             }
 
+            case SELL_TOWER -> {
+                int x = ((Integer) msg.get("x"));
+                int y = ((Integer) msg.get("y"));
+                gameController.sellTowerRemote(x, y);
+            }
+
             default -> {
             }
-        }
-        else if (msg.getType() == NetMessageType.SELL_TOWER) {
-            int x = ((Integer) msg.get("x"));
-            int y = ((Integer) msg.get("y"));
-            gameController.sellTowerRemote(x, y);
         }
     }
 }

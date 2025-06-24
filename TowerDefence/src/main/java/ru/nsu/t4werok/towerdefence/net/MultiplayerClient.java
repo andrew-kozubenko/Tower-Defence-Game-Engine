@@ -14,6 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+
 /**
  * Сетевой клиент кооператива (TCP).
  * Поддерживает лобби и синхронизацию действий в игре.
@@ -95,11 +96,6 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                                 (Integer) msg.get("x"), (Integer) msg.get("y"));
                     }
 
-                    /* ---------- waves ---------- */
-                    case WAVE_SYNC, STATE_SYNC -> {
-                        /* сразу отдаём движку */
-                        LocalMultiplayerContext.get().dispatch(msg);
-
 //                    case UPGRADE_TOWER -> {
 //                        if (game == null) break;
 //                        game.upgradeTowerRemote((Integer) msg.get("x"), (Integer) msg.get("y"));
@@ -108,6 +104,12 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                     case SELL_TOWER -> {
                         if (game == null) break;
                         game.sellTowerRemote((Integer) msg.get("x"), (Integer) msg.get("y"));
+                    }
+
+                    /* ---------- waves ---------- */
+                    case WAVE_SYNC, STATE_SYNC -> {
+                        /* сразу отдаём движку */
+                        LocalMultiplayerContext.get().dispatch(msg);
                     }
 
                     default -> {}
@@ -148,6 +150,18 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                 Map.of("tower",tower,"x",x,"y",y)));
     }
 
+    //    @Override
+//    public void sendUpgradeTower(int x, int y) {
+//        send(new NetMessage(NetMessageType.UPGRADE_TOWER,
+//                Map.of("x", x, "y", y)));
+//    }
+
+    @Override
+    public void sendSellTower(int x, int y) {
+        send(new NetMessage(NetMessageType.SELL_TOWER,
+                Map.of("x", x, "y", y)));
+    }
+
     public void requestNextWave(){ send(new NetMessage(NetMessageType.WAVE_REQ,Map.of())); }
 
     private void send(NetMessage m){ if(out!=null) out.println(m.toJson()); }
@@ -160,17 +174,5 @@ public class MultiplayerClient extends Thread implements NetworkSession {
     @Override public void close(){
         running=false;
         try{if(socket!=null)socket.close();}catch(IOException ignored){}
-    }
-
-//    @Override
-//    public void sendUpgradeTower(int x, int y) {
-//        send(new NetMessage(NetMessageType.UPGRADE_TOWER,
-//                Map.of("x", x, "y", y)));
-//    }
-
-    @Override
-    public void sendSellTower(int x, int y) {
-        send(new NetMessage(NetMessageType.SELL_TOWER,
-                Map.of("x", x, "y", y)));
     }
 }
