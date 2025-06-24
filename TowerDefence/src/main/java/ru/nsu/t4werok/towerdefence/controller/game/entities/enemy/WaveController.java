@@ -40,6 +40,8 @@ public class WaveController {
         this.spawnCallback   = cb;
     }
 
+    public int  getCurrentWaveIndex() { return numberOfWave; }
+
     /* ------------------------------------------------------------------ */
     /*                    ОБНОВЛЕНИЕ (одиночка/клиент)                    */
     /* ------------------------------------------------------------------ */

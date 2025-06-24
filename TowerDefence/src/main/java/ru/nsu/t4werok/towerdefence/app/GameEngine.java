@@ -19,6 +19,7 @@ import ru.nsu.t4werok.towerdefence.model.game.entities.map.Base;
 import ru.nsu.t4werok.towerdefence.model.game.entities.map.GameMap;
 import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.net.LocalMultiplayerContext;
+import ru.nsu.t4werok.towerdefence.net.MultiplayerClient;
 import ru.nsu.t4werok.towerdefence.net.MultiplayerServer;
 import ru.nsu.t4werok.towerdefence.net.NetworkSession;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
@@ -34,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static ru.nsu.t4werok.towerdefence.utils.EnemiesLoader.loadEnemiesConfig;
@@ -72,6 +74,11 @@ public class GameEngine {
     private long           lastUpdateTime= 0;
     private int            prevBaseHp;          // для отправки BASE_HP только при изменении
 
+    /* -------- новые константы и поля -------- */
+    private static final int  SYNC_EVERY_TICKS = 15;          // хост → клиенты
+    private int  tickCounter = 0;                             // NEW
+    private MultiplayerServer srv;                            // NEW
+
     /* ==========================================================
                               КОНСТРУКТОР
        ========================================================== */
@@ -102,19 +109,17 @@ public class GameEngine {
         }
 
         /* ----------- сеть ----------- */
-        session  = LocalMultiplayerContext.get().getSession();
-        iAmHost  = session != null && session.isHost();
+        session = LocalMultiplayerContext.get().getSession();
+        iAmHost = session!=null && session.isHost();
+        System.out.println(iAmHost);
+        if(iAmHost) srv = (MultiplayerServer) session;
 
         /* ----------- WaveController с коллбэком для хоста ----------- */
         waveController = new WaveController(
                 wavesConfig,
                 enemiesConfig,
                 gameMap.getEnemyPaths().size(),
-                (w, e, p) -> {                   // коллбэк хоста
-                    if (iAmHost && session instanceof MultiplayerServer srv) {
-                        srv.sendEnemySpawn(w, e, p);
-                    }
-                });
+                null);
 
         /* ----------- сцена ---------- */
         sc.addScene("Game", gameView.getScene());
@@ -185,10 +190,11 @@ public class GameEngine {
         }
 
         /* ---------- синхронизация HP базы ---------- */
-        if (iAmHost && base.getHealth() != prevBaseHp &&
-                session instanceof MultiplayerServer srv) {
-            prevBaseHp = base.getHealth();
-            srv.sendBaseHp(prevBaseHp);
+        if(iAmHost){
+            if(++tickCounter>=SYNC_EVERY_TICKS){
+                tickCounter=0;
+                srv.sendStateSync(base.getHealth(),enemies,waveController.getCurrentWaveIndex());
+            }
         }
 
         /* ---------- башни ---------- */
@@ -202,7 +208,6 @@ public class GameEngine {
         Canvas canvas = gameView.getCanvas();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        System.out.println("Hello");
         gameView.getMapView().renderMap();
         for (Tower tower : towers) {
             towerView.renderTower(tower);
@@ -239,19 +244,26 @@ public class GameEngine {
      * Клиентам эту кнопку нажимать не нужно — они получат WAVE_START.
      */
     public boolean nextWave() {
-        if (iAmHost){
+        if (session == null) {
+            // Одиночная игра
+            return waveController.nextWave();
+        }
+
+        if (iAmHost) {
             int idx = waveController.nextWaveHost();
             if (idx < 0) return false;
-
             long seed = new Random().nextLong();
-            if (session instanceof MultiplayerServer srv)
-                srv.sendWaveStart(idx, seed);
-
+            srv.sendWaveSync(idx, seed);
             return true;
         }
-        /* клиент: локальная кнопка разрешена лишь для офф-лайна */
-        return waveController.nextWave();
+
+        // Клиент: отправляем запрос хосту
+        if (session instanceof MultiplayerClient cli) {
+            cli.requestNextWave();
+        }
+        return false;
     }
+
 
     /* ==========================================================
                         ОБРАБОТКА СЕТИ
@@ -263,26 +275,22 @@ public class GameEngine {
             case PLACE_TOWER -> gameController.placeTowerRemote(
                     msg.get("tower"), (Integer) msg.get("x"), (Integer) msg.get("y"));
 
-            case WAVE_START -> {
-                /* если цикл ещё не запущен (клиент) — запустим */
-                if (!running) start();
-                int idx = (Integer) msg.get("idx");
-                long seed = ((Number) msg.get("seed")).longValue();
-                waveController.forceStart(idx, seed);
+            case WAVE_SYNC -> {
+                if(!running) start();
+                waveController.forceStart(msg.get("idx"),((Number)msg.get("seed")).longValue());
             }
-
-            case ENEMY_SPAWN -> waveController.remoteSpawn(
-                    (Integer) msg.get("wave"),
-                    (Integer) msg.get("enemy"),
-                    (Integer) msg.get("path"),
-                    enemies, gameMap.getSpawnPoint(),
-                    800 / gameMap.getWidth(),
-                    600 / gameMap.getHeight());
-
-            case BASE_HP -> {
-                int hp = (Integer) msg.get("hp");
-                base.setHealth(hp);
-                prevBaseHp = hp;
+            case STATE_SYNC -> {
+//                /* полная замена списка врагов и HP (клиент) */
+//                base.setHealth((Integer) msg.get("hp"));
+//                enemies.clear();
+//                List<?> arr = msg.get("data");
+//                for(Object o:arr){
+//                    Map<?,?> m=(Map<?,?>)o;
+//                    enemies.add(new Enemy(
+//                            (Integer)m.get("hp"),0,0,0,
+//                            (Integer)m.get("x"),(Integer)m.get("y"),
+//                            (Integer)m.get("path")));
+//                }
             }
 
             default -> {

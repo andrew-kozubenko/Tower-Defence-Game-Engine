@@ -43,7 +43,7 @@ public class MultiplayerMenuView {
 
         /* ---------- JOIN блок ---------- */
         TextField joinIp     = new TextField("127.0.0.1");
-        TextField joinPort   = new TextField("5555");
+        TextField joinPort   = new TextField("8080");
         TextField joinNick   = new TextField("Player");
         Button    joinBtn    = new Button("Join");
         joinBtn.setOnAction(e ->

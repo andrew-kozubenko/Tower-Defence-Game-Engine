@@ -2,6 +2,7 @@ package ru.nsu.t4werok.towerdefence.net;
 
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
+import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 
@@ -91,23 +92,17 @@ public class MultiplayerServer extends Thread implements NetworkSession {
 
     /* --- новые вспомогательные методы для волн --- */
 
-    /** Хост вызвал nextWaveHost(...) в WaveController — сообщаем клиентам. */
-    public void sendWaveStart(int idx,long seed){
-        NetMessage m = new NetMessage(NetMessageType.WAVE_START,
-                Map.of("idx",idx,"seed",seed));
-        broadcast(m);
+    public void sendWaveSync(int idx,long seed){
+        broadcast(new NetMessage(NetMessageType.WAVE_SYNC, Map.of("idx",idx,"seed",seed)));
     }
-    /** Хост заспавнил очередного врага — рассылаем. */
-    public void sendEnemySpawn(int wave,int enemy,int path){
-        NetMessage m = new NetMessage(NetMessageType.ENEMY_SPAWN,
-                Map.of("wave",wave,"enemy",enemy,"path",path));
-        broadcast(m);
-    }
-    /** Базе нанесли урон — синхронизируем HP. */
-    public void sendBaseHp(int hp){
-        NetMessage m = new NetMessage(NetMessageType.BASE_HP,
-                Map.of("hp",hp));
-        broadcast(m);
+    public void sendStateSync(int hp, List<Enemy> enemies, int waveIdx){
+        var arr = enemies.stream().map(e ->
+                Map.of("x",e.getX(),"y",e.getY(),
+                        "path",e.getCurrentPathIndex(),
+                        "hp",e.getLifePoints())
+        ).toList();
+        broadcast(new NetMessage(NetMessageType.STATE_SYNC,
+                Map.of("hp",hp,"wave",waveIdx,"data",arr)));
     }
 
     @Override public boolean isConnected(){ return !serverSocket.isClosed(); }
@@ -195,6 +190,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
                             broadcast(msg);                  // всем остальным
                             LocalMultiplayerContext.get().dispatch(msg); // локально хосту
                         }
+                        case WAVE_REQ -> LocalMultiplayerContext.get().dispatch(msg);
                         default -> {}
                     }
                 }

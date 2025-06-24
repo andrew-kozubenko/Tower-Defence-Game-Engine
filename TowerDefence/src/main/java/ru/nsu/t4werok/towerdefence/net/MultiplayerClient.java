@@ -96,7 +96,7 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                     }
 
                     /* ---------- waves ---------- */
-                    case WAVE_START, ENEMY_SPAWN, BASE_HP -> {
+                    case WAVE_SYNC, STATE_SYNC -> {
                         /* сразу отдаём движку */
                         LocalMultiplayerContext.get().dispatch(msg);
                     }
@@ -138,10 +138,14 @@ public class MultiplayerClient extends Thread implements NetworkSession {
         send(new NetMessage(NetMessageType.PLACE_TOWER,
                 Map.of("tower",tower,"x",x,"y",y)));
     }
+
+    public void requestNextWave(){ send(new NetMessage(NetMessageType.WAVE_REQ,Map.of())); }
+
     private void send(NetMessage m){ if(out!=null) out.println(m.toJson()); }
 
     @Override public boolean isConnected(){ return socket!=null && socket.isConnected();}
     @Override public boolean isHost(){ return false; }
+
 
     /* ================= cleanup ================= */
     @Override public void close(){

@@ -7,24 +7,18 @@ package ru.nsu.t4werok.towerdefence.net.protocol;
  *     data: "<base64-zip-blob со всеми ресурсами>" }
  */
 public enum NetMessageType {
-    HELLO,            // hand-shake
-    PLAYERS,          // список игроков/их статусы
-    READY,
-    CANCEL_READY,
-    START,            // запуск игры + zip-blob ресурсов
 
-    /* towers */
-    PLACE_TOWER,
-    UPGRADE_TOWER,
-    SELL_TOWER,
+    /* lobby / handshake */
+    HELLO, PLAYERS, READY, CANCEL_READY, START, DISCONNECT,
 
-    /* waves / враги */
-    WAVE_START,         // {idx, seed}
-    ENEMY_SPAWN,        // {wave, idInWave, path}
+    /* башни */
+    PLACE_TOWER, UPGRADE_TOWER, SELL_TOWER,
 
-    BASE_HP,
+    /* волны (новые) */
+    WAVE_REQ,      // клиент → хост: «запусти следующую волну»
+    WAVE_SYNC,     // хост   → все : {idx,seed} – объявление начала волны
+    STATE_SYNC,    // хост   → все : полный снимок врагов + HP базы
 
-    PLAYER_STATS,
-    PING,
-    DISCONNECT
+    /* прочее */
+    PING
 }
