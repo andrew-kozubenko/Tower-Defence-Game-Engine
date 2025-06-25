@@ -3,6 +3,7 @@ package ru.nsu.t4werok.towerdefence.net;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
+import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 
@@ -88,6 +89,26 @@ public class MultiplayerServer extends Thread implements NetworkSession {
         /* клиентам */
         broadcast(new NetMessage(NetMessageType.PLACE_TOWER,
                 Map.of("tower",tower,"x",x,"y",y)));
+    }
+
+    @Override public void sendUpgradeTower(String name, Integer damage, Double fireRate, Double attackRadius,
+                                           List<String> upgrades, int x, int y){
+        long id = towerIds.getAndIncrement();
+        /* локально для хоста */
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("name", name);
+        payload.put("damage", damage);
+        payload.put("fireRate", fireRate);
+        payload.put("attackRadius", attackRadius);
+        payload.put("upgrades", upgrades);
+        payload.put("x", x);
+        payload.put("y", y);
+
+        LocalMultiplayerContext.get().dispatch(
+                new NetMessage(NetMessageType.UPGRADE_TOWER, payload));
+
+        /* клиентам */
+        broadcast(new NetMessage(NetMessageType.UPGRADE_TOWER, payload));
     }
 
     @Override
@@ -198,7 +219,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
                     NetMessage msg=NetMessage.fromJson(line);
                     switch(msg.getType()){
                         case HELLO -> { nick=msg.get("name"); names.add(nick); sendPlayers(); }
-                        case PLACE_TOWER, SELL_TOWER -> {
+                        case PLACE_TOWER, SELL_TOWER, UPGRADE_TOWER -> {
                             broadcast(msg);                  // всем остальным
                             LocalMultiplayerContext.get().dispatch(msg); // локально хосту
                         }

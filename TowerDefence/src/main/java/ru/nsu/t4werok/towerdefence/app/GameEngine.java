@@ -297,6 +297,18 @@ public class GameEngine {
 //                }
             }
 
+            case UPGRADE_TOWER -> {
+                gameController.upgradeTowerRemote(
+                        (String) msg.get("name"),
+                        (Integer) msg.get("damage"),
+                        (Double) msg.get("attackRadius"),
+                        (Double) msg.get("fireRate"),
+                        (List<String>) msg.get("upgrades"),
+                        (Integer) msg.get("x"),
+                        (Integer) msg.get("y")
+                );
+            }
+
             case SELL_TOWER -> {
                 int x = ((Integer) msg.get("x"));
                 int y = ((Integer) msg.get("y"));

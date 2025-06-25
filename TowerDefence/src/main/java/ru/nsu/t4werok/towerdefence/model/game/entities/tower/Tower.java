@@ -1,15 +1,17 @@
 package ru.nsu.t4werok.towerdefence.model.game.entities.tower;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.scene.image.Image;
 import ru.nsu.t4werok.towerdefence.model.game.entities.enemy.Enemy;
 
 import java.io.File;
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Tower {
+public class Tower implements Serializable {
     private String name;
     private int x;
     private int y;
@@ -22,6 +24,7 @@ public class Tower {
     private double reloadCounter;
     private int upgradeLevel;
     private String visualEffect;
+    @JsonIgnore
     private Image imageTower;         // Картинка башни
     private int attackX;
     private int attackY;
@@ -192,5 +195,9 @@ public class Tower {
     }
     public void setAttackY(int attackY) {
         this.attackY = attackY;
+    }
+
+    public void setUpgrades(List<String> upgrades) {
+        this.upgrades = List.copyOf(upgrades);
     }
 }
