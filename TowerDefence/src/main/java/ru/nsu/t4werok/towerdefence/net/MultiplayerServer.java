@@ -98,6 +98,18 @@ public class MultiplayerServer extends Thread implements NetworkSession {
                 Map.of("x", x, "y", y)));
     }
 
+    @Override
+    public void sendUpgradeTower(int x, int y) {
+        // Локальная обработка (для хоста)
+//        LocalMultiplayerContext.get().dispatch(
+//                new NetMessage(NetMessageType.UPGRADE_TOWER,
+//                        Map.of("x", x, "y", y)));
+
+        // Отправка всем клиентам
+        broadcast(new NetMessage(NetMessageType.UPGRADE_TOWER,
+                Map.of("x", x, "y", y)));
+    }
+
     @Override public boolean isConnected(){ return !serverSocket.isClosed(); }
     @Override public boolean isHost(){ return true; }
 
@@ -177,7 +189,7 @@ public class MultiplayerServer extends Thread implements NetworkSession {
                     NetMessage msg=NetMessage.fromJson(line);
                     switch(msg.getType()){
                         case HELLO -> { nick=msg.get("name"); names.add(nick); sendPlayers(); }
-                        case PLACE_TOWER, SELL_TOWER -> {
+                        case PLACE_TOWER, SELL_TOWER, UPGRADE_TOWER -> {
                             broadcast(msg);                  // всем остальным
                             LocalMultiplayerContext.get().dispatch(msg); // локально хосту
                         }

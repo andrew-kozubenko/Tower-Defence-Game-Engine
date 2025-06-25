@@ -18,6 +18,9 @@ public interface NetworkSession {
     /** Корректно завершить соединение. */
     void close();
 
-//    void sendUpgradeTower(int x, int y);
+    // Удалить башню
     void sendSellTower(int x, int y);
+
+    // Апгрейд башни
+    void sendUpgradeTower(int x, int y);
 }

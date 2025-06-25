@@ -47,6 +47,9 @@ public class TechTreeView {
 
     /* ===================================================================== */
     /* =======================  APPLY К КОНКРЕТНОЙ БАШНЕ  ================== */
+//    public void test() {
+//        pop.hide();
+//    }
     public void showTowerUpgradeMenu(Tower tower, List<TechTree> trees) {
         Popup pop = new Popup();
         VBox  box = layout("Apply to " + tower.getName());
@@ -81,7 +84,7 @@ public class TechTreeView {
         // ——— кнопка "Продать" ———
         Button sellButton = new Button("Sell");
         sellButton.setOnAction(e -> {
-            if (gc.sellTower(tower)) {  // предполагается, что есть метод sellTower
+            if (gc.sellTower(tower)) {
 //                pop.hide();
 //                updateHUD();            // обновление интерфейса
             } else {

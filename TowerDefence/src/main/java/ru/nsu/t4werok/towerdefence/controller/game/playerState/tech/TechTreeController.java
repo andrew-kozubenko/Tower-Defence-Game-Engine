@@ -42,7 +42,8 @@ public class TechTreeController {
 
     public boolean buyUpgrade(TechNode n) {
         if (!canUnlock(n) || !player.spendCoins(n.getCost())) return false;
-        n.unlock(); return true;
+        n.unlock();
+        return true;
     }
 
     public boolean buyUpgradeForTower(Tower tower, TechNode n) {
@@ -53,8 +54,13 @@ public class TechTreeController {
 
         UpgradeManager.applyUpgrade(tower, n.getName());
         tower.addUpgrade(n.getName());
+
         return true;
     }
+    public void applyUpgrade(Tower tower, String upgradeName){
+        UpgradeManager.applyUpgrade(tower, upgradeName);
+    }
+
 
     /* ---------- availability helpers ---------- */
     private boolean canUnlock(TechNode n) {

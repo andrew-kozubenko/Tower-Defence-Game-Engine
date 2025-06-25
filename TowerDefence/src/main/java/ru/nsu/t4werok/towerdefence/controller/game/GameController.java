@@ -16,8 +16,11 @@ import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechNode;
 import ru.nsu.t4werok.towerdefence.model.game.playerState.tech.TechTree;
 import ru.nsu.t4werok.towerdefence.net.LocalMultiplayerContext;
 import ru.nsu.t4werok.towerdefence.net.NetworkSession;
+import ru.nsu.t4werok.towerdefence.view.game.entities.tower.TowerView;
+import ru.nsu.t4werok.towerdefence.view.game.playerState.tech.TechTreeView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -134,8 +137,6 @@ public class GameController {
         if (isMultiplayer()) {
             networkSession.sendSellTower(tower.getX(), tower.getY());
         }
-        // Удаляем башню с карты
-//        gameMap.clearTowerAt(tower.getX(), tower.getY());
 
         // Обновляем интерфейс
 //        updateHUD();
@@ -158,6 +159,60 @@ public class GameController {
             towerController.removeTower(tower);  // удаляем
         });
     }
+
+    public boolean buyUpgradeForTower(Tower tower, TechNode node) {
+        // отправка сообщения если мультиплеер
+        if (techTreeController.buyUpgradeForTower(tower, node)) {
+            System.out.println("Upgrade");
+            if (isMultiplayer()) {
+                System.out.println("send upgrade");
+                networkSession.sendUpgradeTower(tower.getX(), tower.getY());
+            }
+            return true;
+        }
+        return false;
+
+    }
+
+    public synchronized void upgradeTowerRemote(int x, int y) {
+        System.out.println("1");
+        if (towers == null) return;
+
+        // Найти башню по координатам
+        Optional<Tower> maybeTower = towers.stream()
+                .filter(tower -> tower.getX() == x && tower.getY() == y)
+                .findFirst();
+
+        maybeTower.ifPresent(tower -> {
+            TechTree techTree = getTechTrees().stream()
+                    .filter(t -> t.getTowerName().equals(tower.getName()))
+                    .findFirst().orElse(null);
+            if (techTree == null) return;
+            System.out.println("2");
+            List<TechNode> allNodes = techTree.getAvailableUpgradesSend(tower);
+            System.out.println("3");
+            if (allNodes == null) return;
+            System.out.println("4");
+
+            List<String> applied = tower.getUpgrades();
+            System.out.println("5");
+
+            // Найти следующий ещё не применённый апгрейд
+            for (TechNode node : allNodes) {
+
+                if (applied.contains(node.getName())) continue;               // Уже применён
+                System.out.println(node.getName());
+//                if (!node.isUnlocked()) continue;                             // Глобально не открыт
+                System.out.println(node.getName());
+                techTreeController.applyUpgrade(tower, node.getName());          // Применяем
+                tower.addUpgrade(node.getName());                            // Отмечаем как применённый
+                System.out.println("upgrade all");
+//                TowerView.showTowerUpgradeMenu(tower, getTechTrees());
+                break;                                                       // Только один апгрейд за раз
+            }
+        });
+    }
+
 
 
     public void selectTower(TowerConfig towerConfig) {
@@ -214,9 +269,6 @@ public class GameController {
 
     public boolean buyUpgrade(TechNode node) {
         return techTreeController.buyUpgrade(node);
-    }
-    public boolean buyUpgradeForTower(Tower tower, TechNode node) {
-        return techTreeController.buyUpgradeForTower(tower, node);
     }
 
     public boolean isUpgradeAvailable(TechNode node) {

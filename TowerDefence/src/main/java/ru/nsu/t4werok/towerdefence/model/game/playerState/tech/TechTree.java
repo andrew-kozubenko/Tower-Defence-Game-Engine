@@ -66,4 +66,16 @@ public class TechTree implements Serializable {
             collectAvailable(n.getChildren(), tower, out);
         }
     }
+
+    public List<TechNode> getAvailableUpgradesSend(Tower tower) {
+        List<TechNode> out = new ArrayList<>();
+        collectAvailableSend(roots, tower, out);
+        return out;
+    }
+    private void collectAvailableSend(List<TechNode> src, Tower tower, List<TechNode> out) {
+        for (TechNode n : src) {
+            out.add(n); // добавляем вообще все узлы (доступные, недоступные, применённые и неприменённые)
+            collectAvailableSend(n.getChildren(), tower, out);
+        }
+    }
 }
