@@ -1,8 +1,10 @@
 package ru.nsu.t4werok.towerdefence.net;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.nsu.t4werok.towerdefence.controller.SceneController;
 import ru.nsu.t4werok.towerdefence.controller.game.GameController;
 import ru.nsu.t4werok.towerdefence.controller.menu.LobbyController;
+import ru.nsu.t4werok.towerdefence.model.game.entities.tower.Tower;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessage;
 import ru.nsu.t4werok.towerdefence.net.protocol.NetMessageType;
 
@@ -79,6 +81,7 @@ public class MultiplayerClient extends Thread implements NetworkSession {
     @Override public void run() {
         try {
             String line;
+            ObjectMapper mapper = new ObjectMapper(); // желательно сделать его полем класса
             while (running && (line = in.readLine()) != null) {
                 NetMessage msg = NetMessage.fromJson(line);
                 switch (msg.getType()) {
@@ -96,10 +99,18 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                                 (Integer) msg.get("x"), (Integer) msg.get("y"));
                     }
 
-//                    case UPGRADE_TOWER -> {
-//                        if (game == null) break;
-//                        game.upgradeTowerRemote((Integer) msg.get("x"), (Integer) msg.get("y"));
-//                    }
+                    case UPGRADE_TOWER -> {
+                        if (game == null) break;
+                        game.upgradeTowerRemote(
+                                (String) msg.get("name"),
+                                (Integer) msg.get("damage"),
+                                (Double) msg.get("attackRadius"),
+                                (Double) msg.get("fireRate"),
+                                (List<String>) msg.get("upgrades"),
+                                (Integer) msg.get("x"),
+                                (Integer) msg.get("y")
+                        );
+                    }
 
                     case SELL_TOWER -> {
                         if (game == null) break;
@@ -150,11 +161,22 @@ public class MultiplayerClient extends Thread implements NetworkSession {
                 Map.of("tower",tower,"x",x,"y",y)));
     }
 
-    //    @Override
-//    public void sendUpgradeTower(int x, int y) {
-//        send(new NetMessage(NetMessageType.UPGRADE_TOWER,
-//                Map.of("x", x, "y", y)));
-//    }
+    @Override
+    public void sendUpgradeTower(String name, Integer damage, Double fireRate,
+                                 Double attackRadius,
+                                 List<String> upgrades, int x, int y) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("name", name);
+        payload.put("damage", damage);
+        payload.put("fireRate", fireRate);
+        payload.put("attackRadius", attackRadius);
+        payload.put("upgrades", upgrades);
+        payload.put("x", x);
+        payload.put("y", y);
+
+        send(new NetMessage(NetMessageType.UPGRADE_TOWER, payload));
+    }
+
 
     @Override
     public void sendSellTower(int x, int y) {

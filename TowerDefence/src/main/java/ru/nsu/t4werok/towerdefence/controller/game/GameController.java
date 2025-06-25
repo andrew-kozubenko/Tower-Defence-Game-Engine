@@ -216,7 +216,67 @@ public class GameController {
         return techTreeController.buyUpgrade(node);
     }
     public boolean buyUpgradeForTower(Tower tower, TechNode node) {
-        return techTreeController.buyUpgradeForTower(tower, node);
+        System.out.println(tower.getName());
+        boolean result = techTreeController.buyUpgradeForTower(tower, node);
+        if (result && isMultiplayer()) networkSession.sendUpgradeTower(tower.getName(),
+                tower.getDamage(),
+                tower.getAttackRadius(),
+                tower.getFireRate(),
+                tower.getUpgrades(),
+                tower.getX(),
+                tower.getY());
+        return result;
+    }
+
+    public synchronized void upgradeTowerRemote(String name, Integer damage, Double fireRate,
+                                                Double attackRadius,
+                                                List<String> upgrades,  int x, int y) {
+
+        if (towers == null) return;
+
+        // Найти башню по координатам
+        Optional<Tower> maybeTower = towers.stream()
+                .filter(tower -> tower.getX() == x && tower.getY() == y)
+                .findFirst();
+
+        // Удалить после стрима
+        maybeTower.ifPresent(tower -> {
+            towers.remove(tower);
+            towerController.removeTower(tower);  // удаляем
+        });
+        System.out.println("1");
+        if (towersForSelect == null) return;
+        System.out.println("2");
+
+        System.out.println(name + damage + fireRate + attackRadius + upgrades + x + y);
+        // Ищем TowerConfig по имени
+        Optional<TowerConfig> maybeConfig = towersForSelect.stream()
+                .filter(cfg -> cfg.getName().equals(name))
+                .findFirst();
+
+        if (maybeConfig.isEmpty()) return;
+        TowerConfig baseConfig = maybeConfig.get();
+        System.out.println("3");
+
+        // Создаём башню на основе найденной конфигурации
+        Tower newTower = new Tower(
+                baseConfig.getName(),
+                baseConfig.getPrice(),
+                damage != null ? damage : baseConfig.getDamage(),
+                baseConfig.getDamageType(),
+                fireRate != null ? fireRate : baseConfig.getFireRate(),
+                baseConfig.getVisualEffect(),
+                x, y,
+                attackRadius,
+                baseConfig.getImage()
+        );
+
+        // Обновляем апгрейды
+        newTower.setUpgrades(new ArrayList<>(upgrades));
+        System.out.println("4");
+
+        // Добавляем на карту
+        towers.add(newTower);
     }
 
     public boolean isUpgradeAvailable(TechNode node) {
